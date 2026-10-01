@@ -196,11 +196,9 @@
   box-shadow: var(--shadow-md);
 }
 
-@media (prefers-color-scheme: dark) {
-  .bottom-nav {
-    background: rgba(27, 24, 21, 0.92);
-    border-color: rgba(233, 196, 106, 0.18);
-  }
+html[data-theme='dark'] .bottom-nav {
+  background: rgba(27, 24, 21, 0.92);
+  border-color: rgba(233, 196, 106, 0.18);
 }
 
 .bottom-nav-item {

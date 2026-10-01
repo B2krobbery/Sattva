@@ -137,6 +137,8 @@
     --color-surface-elevated: #28241F;
     --color-border: #363028;
     --color-border-subtle: rgba(233, 196, 106, 0.15);
+    --color-glass: rgba(38, 33, 27, 0.62);
+    --color-glass-border: rgba(255, 244, 228, 0.10);
 
     /* Typography Colors - High Contrast */
     --color-text-primary: #FAF6EF;
@@ -385,6 +387,16 @@ html[data-platform='android'] textarea {
   -webkit-user-select: text;
 }
 /* Web: hover states only make sense with a pointing device. */
+/* Dark-theme glass: cards float as frosted deep panels instead of
+   solid dark blocks — softer contrast, still readable. */
+html[data-theme='dark'] .glass-card {
+  background-color: var(--color-glass);
+  border-color: var(--color-glass-border);
+  -webkit-backdrop-filter: blur(18px) saturate(135%);
+  backdrop-filter: blur(18px) saturate(135%);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 244, 228, 0.06);
+}
+
 @media (hover: hover) and (pointer: fine) {
   html[data-platform='web'] ::-webkit-scrollbar {
     width: 8px;

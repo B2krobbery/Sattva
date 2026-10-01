@@ -21,17 +21,15 @@
   border: 1px solid rgba(255, 255, 255, 0.5);
 }
 
-@media (prefers-color-scheme: dark) {
-  .card-default {
-    background-color: var(--color-surface-container);
-  }
-  .card-elevated {
-    background-color: var(--color-surface);
-  }
-  .card-glass {
-    background-color: rgba(25, 37, 15, 0.6);
-    border: 1px solid rgba(217, 197, 178, 0.2);
-  }
+html[data-theme='dark'] .card-default {
+  background-color: var(--color-surface-container);
+}
+html[data-theme='dark'] .card-elevated {
+  background-color: var(--color-surface);
+}
+html[data-theme='dark'] .card-glass {
+  background-color: var(--color-glass);
+  border: 1px solid var(--color-glass-border);
 }
 
 /* Padding */

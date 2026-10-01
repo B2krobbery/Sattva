@@ -37,7 +37,7 @@ export function ProfileNudge() {
   return (
     <Link
       to="/profile"
-      className="flex items-center gap-3 rounded-2xl border border-border-subtle bg-surface px-4 py-3 hover:bg-surface-subtle transition-colors"
+      className="glass-card flex items-center gap-3 rounded-2xl border border-border-subtle bg-surface px-4 py-3 hover:bg-surface-subtle transition-colors"
     >
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline gap-2">
