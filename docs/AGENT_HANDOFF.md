@@ -98,8 +98,9 @@ PostgREST reminder: to-one embeds return objects, not arrays (`row.temples?.name
 
 ## Deployment (Vercel)
 
-- `web/vercel.json` — Vite SPA config: `dist` output, catch-all rewrite to `index.html`, immutable asset caching. Set Vercel project **Root Directory to `web/`**. Env vars (optional — source has fallbacks): `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`.
-- After first deploy, add the Vercel domain to Supabase Auth Site URL / redirect URLs or Google OAuth + magic links won't return to the web app.
+- **Live: `https://pratha-two.vercel.app`** — project `pratha` (team `marvelpokemaster-3377s-projects`), git-connected to `marvelpokemaster/Pratha`; pushes to `main` auto-deploy. Prod env vars set: `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`.
+- `web/vercel.json` — Vite SPA config: `dist` output, catch-all rewrite to `index.html`, immutable asset caching. `.vercel/` is gitignored.
+- PENDING (user): add `https://pratha-two.vercel.app/**` to Supabase Auth redirect URLs and set it as Site URL (or alongside the app scheme), or Google OAuth/reset links won't round-trip on the web.
 
 ## Known layout trap (fixed 2026-10-01)
 
