@@ -101,6 +101,8 @@ PostgREST reminder: to-one embeds return objects, not arrays (`row.temples?.name
 - `profiles` gained `birth_date/birth_time/birth_place/birth_lat/birth_lon`. NOTE: `profiles` uses **column-scoped UPDATE grants** — new columns need `GRANT UPDATE (...) TO authenticated` or client saves fail with 42501.
 - `kundali-ask` edge fn (JWT-gated): Schlyter low-precision ephemeris → sidereal via Lahiri ayanamsa → nakshatra/pada, moon+sun rashi, tithi, lagna. Lagna = ecliptic horizon-scan (alt zero-crossing with sin(hourAngle)<0 — closed-form atan2 versions return the descendant ~180° off). POB resolves via offline CITY_COORDS table first, Nominatim fallback; tz auto-derived (IST inside India bbox). Gemini narration needs `thinkingConfig:{thinkingBudget:0}` — gemini-2.5 burns output tokens on thinking and truncates otherwise.
 - UI: Profile → Settings → "Janma Details" form; `/pujas` shows "For Your Janma" card (or a CTA to add birth details).
+- `BirthDetailsPrompt` (mounted under ProtectedRoute in App.tsx): post-login modal capturing DOB/TOB/POB when profile lacks them; "Maybe later" sets `pratha-janma-dismissed` in localStorage — it only re-shows after the flag is cleared.
+- `ProfileNudge` on Home: completeness bar (7 fields: name/phone/city/gotra/birth date/time/place) linking to /profile; hides when full.
 - Accuracy caveat: low-precision (~arc-minutes). For production-grade kundali, swap in a real astrology API (Vedic Rishi / Prokerala) — the chart shape is designed to be replaced server-side.
 
 ## Access model (updated 2026-10-01)
