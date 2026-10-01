@@ -86,8 +86,14 @@ export default function App() {
     const listener = CapApp.addListener('appUrlOpen', ({ url }) => {
       void handleAuthDeepLink(url);
     });
+    // Hardware back: navigate history, else minimize (don't kill the app).
+    const backListener = CapApp.addListener('backButton', () => {
+      if (window.history.length > 1) window.history.back();
+      else void CapApp.minimizeApp();
+    });
     return () => {
       listener.then((l) => l.remove());
+      backListener.then((l) => l.remove());
     };
   }, []);
 

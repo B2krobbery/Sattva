@@ -369,3 +369,29 @@ html {
     color: inherit;
   }
 }
+
+/* ── Platform-specific polish ────────────────────────────── */
+/* Android (Capacitor WebView): remove browser affordances that feel
+   wrong inside a native app. */
+html[data-platform='android'] body {
+  overscroll-behavior: none;
+  touch-action: manipulation; /* kills double-tap zoom delay */
+  -webkit-text-size-adjust: 100%;
+  user-select: none;
+}
+html[data-platform='android'] input,
+html[data-platform='android'] textarea {
+  user-select: text;
+  -webkit-user-select: text;
+}
+/* Web: hover states only make sense with a pointing device. */
+@media (hover: hover) and (pointer: fine) {
+  html[data-platform='web'] ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  html[data-platform='web'] ::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--color-text-muted) 40%, transparent);
+    border-radius: 8px;
+  }
+}
