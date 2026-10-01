@@ -7,6 +7,7 @@ export interface Profile {
   city?: string;
   gotra?: string;
   nakshatra?: string;
+  phone?: string;
   birthDate?: string;
   birthTime?: string;
   birthPlace?: string;
@@ -54,9 +55,9 @@ const CONTRIBUTION_ERROR_MESSAGES: Record<string, string> = {
 };
 
 export async function getProfile(): Promise<{ profile: Profile | null }> {
-  const { data, error } = await supabase.from('profiles').select('id,display_name,city,gotra,nakshatra,birth_date,birth_time,birth_place').maybeSingle();
+  const { data, error } = await supabase.from('profiles').select('id,display_name,city,gotra,nakshatra,phone,birth_date,birth_time,birth_place').maybeSingle();
   if (error) throw error;
-  return { profile: data ? { id: data.id, displayName: data.display_name, city: data.city, gotra: data.gotra, nakshatra: data.nakshatra, birthDate: data.birth_date, birthTime: data.birth_time, birthPlace: data.birth_place } : null };
+  return { profile: data ? { id: data.id, displayName: data.display_name, city: data.city, gotra: data.gotra, nakshatra: data.nakshatra, phone: data.phone, birthDate: data.birth_date, birthTime: data.birth_time, birthPlace: data.birth_place } : null };
 }
 
 export async function updateProfile(profile: Partial<Profile>): Promise<{ success: boolean }> {

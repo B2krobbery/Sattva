@@ -17,6 +17,7 @@ import { getPujas } from '@/lib/api/puja';
 import { getWelfareStats } from '@/lib/api/gaushala';
 import { IMAGES } from '@/lib/images';
 import { RishiChatModal } from '@/features/ai/RishiChatModal';
+import { ProfileNudge } from '@/components/profile/ProfileNudge';
 import './Home.css';
 
 export function Home() {
@@ -78,6 +79,8 @@ export function Home() {
           </Link>
         </div>
       </section>
+
+      <ProfileNudge />
 
       {/* Quick Action Navigation Grid */}
       <section className="quick-action-grid">
