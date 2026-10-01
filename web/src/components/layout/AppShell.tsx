@@ -141,7 +141,7 @@ export function AppShell() {
       </main>
 
       {/* Mobile Floating Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-[calc(12px+env(safe-area-inset-bottom,0px))] left-4 right-4 h-16 flex items-center justify-around px-2 z-50 bg-white/90 dark:bg-[#1B1815]/90 backdrop-blur-xl border border-border rounded-2xl shadow-sm">
+      <nav className="md:hidden fixed bottom-[calc(12px+env(safe-area-inset-bottom,0px))] left-4 right-4 h-16 flex items-center justify-around px-2 z-50 bg-surface/85 backdrop-blur-xl border border-border rounded-2xl shadow-sm">
         {navItems.map((item) => (
           <NavLink
             key={item.path}

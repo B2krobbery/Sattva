@@ -14,11 +14,11 @@ export function SevaExperience() {
     <motion.div variants={containerVariants} className="flex flex-col gap-8 md:gap-12 pb-10">
       
       {/* Hero Section */}
-      <motion.section  className="relative rounded-[2rem] overflow-hidden bg-text-primary text-white p-8 md:p-12 shadow-2xl">
-        <div className="absolute inset-0 opacity-20">
-          <img src={IMAGES.animals.gauri} alt="Kapila Calf" className="w-full h-full object-cover" />
+      <motion.section  className="relative rounded-[2rem] overflow-hidden bg-deep text-white p-8 md:p-12 shadow-2xl">
+        <div className="absolute inset-0">
+          <img src={IMAGES.animals.gauri} alt="Kapila Calf" className="w-full h-full object-cover opacity-40" />
         </div>
-        <div className="absolute inset-0 bg-gradient-to-t from-text-primary via-text-primary/80 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-deep via-deep/75 to-deep/20" />
         
         <div className="relative z-10 flex flex-col items-start gap-4">
           <div className="bg-white/20 border border-white/20 px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-widest flex items-center gap-1.5">
@@ -32,7 +32,7 @@ export function SevaExperience() {
             Your monthly contribution directly provides green fodder, medical supplies, and shelter for over 450 rescued indigenous cows at our Vrindavan sanctum.
           </p>
           
-          <Button onClick={() => setModalOpen(true)} className="bg-white text-text-primary hover:bg-white/90 rounded-full px-8 py-6 text-[15px] font-bold  flex items-center gap-2 group">
+          <Button onClick={() => setModalOpen(true)} className="bg-white text-deep hover:bg-white/90 rounded-full px-8 py-6 text-[15px] font-bold  flex items-center gap-2 group">
             Sponsor Green Fodder <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
           </Button>
         </div>

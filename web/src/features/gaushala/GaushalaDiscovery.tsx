@@ -72,7 +72,7 @@ export function GaushalaDiscovery() {
               className={cn(
                 "px-4 py-2 rounded-full text-[13px] font-semibold transition-all whitespace-nowrap outline-none focus-visible:ring-2 focus-visible:ring-terracotta border",
                 filter === f 
-                  ? "bg-text-primary text-white border-text-primary " 
+                  ? "bg-terracotta text-white border-terracotta " 
                   : "bg-surface border-border text-text-secondary hover:text-text-primary hover:bg-surface-subtle"
               )}
               onClick={() => setFilter(f)}
