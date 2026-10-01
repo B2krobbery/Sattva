@@ -13,6 +13,7 @@ import {
   Activity 
 } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
+import { getProfile } from '@/lib/api/profile';
 import { getPujas } from '@/lib/api/puja';
 import { getWelfareStats } from '@/lib/api/gaushala';
 import { IMAGES } from '@/lib/images';
@@ -23,7 +24,12 @@ import './Home.css';
 export function Home() {
   const { user } = useAuth();
   const [rishiOpen, setRishiOpen] = useState(false);
-  const devoteeName = user?.user_metadata?.display_name?.split(' ')[0] || user?.email?.split('@')[0] || 'Devotee';
+  const { data: profileData } = useQuery({
+    queryKey: ['profile'],
+    queryFn: getProfile,
+    enabled: !!user,
+  });
+  const devoteeName = profileData?.profile?.displayName?.split(' ')[0] || user?.user_metadata?.display_name?.split(' ')[0] || user?.email?.split('@')[0] || 'Devotee';
 
   const { data: pujaData } = useQuery({
     queryKey: ['pujas'],

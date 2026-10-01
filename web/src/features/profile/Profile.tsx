@@ -15,7 +15,7 @@ import {
   MonitorSmartphone
 } from 'lucide-react';
 import { useThemeMode, setThemeMode } from '@/lib/theme';
-import { getProfile, updateProfile, getDonations, getFamily, addFamilyMember, type Donation, type FamilyMember } from '@/lib/api/profile';
+import { getProfile, updateProfile, uploadAvatar, avatarPublicUrl, getDonations, getFamily, addFamilyMember, type Donation, type FamilyMember } from '@/lib/api/profile';
 import { getBookings, type PujaBooking } from '@/lib/api/puja';
 import { useAuth } from '@/features/auth/AuthContext';
 import { IMAGES } from '@/lib/images';
@@ -34,8 +34,15 @@ export function Profile() {
   const [birthPlace, setBirthPlace] = useState('');
   const [birthSaved, setBirthSaved] = useState(false);
   const [birthInit, setBirthInit] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editPhone, setEditPhone] = useState('');
+  const [editCity, setEditCity] = useState('');
+  const [editGotra, setEditGotra] = useState('');
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [profileSaved, setProfileSaved] = useState(false);
 
-  const { data: profileData } = useQuery({
+  const { data: profileData, refetch: refetchProfile } = useQuery({
     queryKey: ['profile'],
     queryFn: () => getProfile(),
     enabled: !!user,
@@ -65,6 +72,10 @@ export function Profile() {
     setBirthDate(profile.birthDate ?? '');
     setBirthTime(profile.birthTime ?? '');
     setBirthPlace(profile.birthPlace ?? '');
+    setEditName(profile.displayName ?? '');
+    setEditPhone(profile.phone ?? '');
+    setEditCity(profile.city ?? '');
+    setEditGotra(profile.gotra ?? '');
   }
   const displayName = profile?.displayName || user?.user_metadata?.display_name || user?.email?.split('@')[0] || 'Devotee';
   const email = user?.email || 'Registered Devotee';
@@ -99,9 +110,9 @@ export function Profile() {
       {/* Devotee Header Identity Card */}
       <section className="devotee-profile-card">
         <div className="devotee-avatar-box">
-          <img 
-            src={user?.user_metadata?.avatar_url || IMAGES.profile.defaultAvatar}
-            alt={displayName} 
+          <img
+            src={avatarPreview || avatarPublicUrl(profile?.avatarPath) || user?.user_metadata?.avatar_url || IMAGES.profile.defaultAvatar}
+            alt={displayName}
           />
         </div>
 
@@ -382,6 +393,69 @@ export function Profile() {
                 </button>
               ))}
             </div>
+          </div>
+
+          <div className="activity-item-card" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 12 }}>
+            <div>
+              <h4 className="activity-meta-title">Edit Profile</h4>
+              <p className="activity-meta-sub">Your name, photo & identity shown across Pratha</p>
+            </div>
+            <label className="flex items-center gap-3 cursor-pointer">
+              <img
+                src={avatarPreview || avatarPublicUrl(profile?.avatarPath) || user?.user_metadata?.avatar_url || IMAGES.profile.defaultAvatar}
+                alt="Profile photo"
+                className="w-14 h-14 rounded-full object-cover border border-border-subtle"
+              />
+              <span className="text-xs font-semibold text-terracotta">
+                {avatarFile ? avatarFile.name : 'Change photo'}
+              </span>
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0] ?? null;
+                  setAvatarFile(f);
+                  setAvatarPreview(f ? URL.createObjectURL(f) : null);
+                  setProfileSaved(false);
+                }}
+              />
+            </label>
+            <div className="birth-fields">
+              <label>
+                <span className="form-label">Display Name</span>
+                <input type="text" className="form-input" placeholder="Your name" value={editName} onChange={(e) => { setEditName(e.target.value); setProfileSaved(false); }} />
+              </label>
+              <label>
+                <span className="form-label">Phone</span>
+                <input type="tel" className="form-input" placeholder="+91 …" value={editPhone} onChange={(e) => { setEditPhone(e.target.value); setProfileSaved(false); }} />
+              </label>
+              <label>
+                <span className="form-label">City</span>
+                <input type="text" className="form-input" placeholder="Varanasi" value={editCity} onChange={(e) => { setEditCity(e.target.value); setProfileSaved(false); }} />
+              </label>
+              <label>
+                <span className="form-label">Gotra</span>
+                <input type="text" className="form-input" placeholder="Bharadwaj" value={editGotra} onChange={(e) => { setEditGotra(e.target.value); setProfileSaved(false); }} />
+              </label>
+            </div>
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={async () => {
+                let avatarPath = profile?.avatarPath;
+                if (avatarFile) {
+                  const up = await uploadAvatar(avatarFile);
+                  avatarPath = up.path;
+                }
+                await updateProfile({ displayName: editName, phone: editPhone, city: editCity, gotra: editGotra, avatarPath });
+                setAvatarFile(null);
+                setProfileSaved(true);
+                await refetchProfile();
+              }}
+            >
+              {profileSaved ? 'Saved' : 'Save Profile'}
+            </button>
           </div>
 
           <div className="activity-item-card" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 12 }}>

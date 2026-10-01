@@ -4,16 +4,24 @@ import { Sparkles } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { getProfile, updateProfile } from '@/lib/api/profile';
 
+// "Maybe later" snoozes for 7 days, not forever — profile gaps resurface.
 const DISMISS_KEY = 'pratha-janma-dismissed';
+const SNOOZE_MS = 7 * 24 * 60 * 60 * 1000;
+
+function isSnoozed(): boolean {
+  const ts = Number(localStorage.getItem(DISMISS_KEY) || 0);
+  return ts > 0 && Date.now() - ts < SNOOZE_MS;
+}
 
 // Shown once after login when the devotee hasn't saved birth details.
 // Feeds the /pujas "For Your Janma" recommendations.
 export function BirthDetailsPrompt() {
   const { user, loading } = useAuth();
-  const [dismissed, setDismissed] = useState(() => localStorage.getItem(DISMISS_KEY) === '1');
+  const [dismissed, setDismissed] = useState(isSnoozed);
   const [dob, setDob] = useState('');
   const [tob, setTob] = useState('');
   const [pob, setPob] = useState('');
+  const [editName, setEditName] = useState('');
   const [saving, setSaving] = useState(false);
 
   const { data } = useQuery({
@@ -30,7 +38,7 @@ export function BirthDetailsPrompt() {
     if (!dob) return;
     setSaving(true);
     try {
-      await updateProfile({ birthDate: dob, birthTime: tob, birthPlace: pob });
+      await updateProfile({ birthDate: dob, birthTime: tob, birthPlace: pob, displayName: editName.trim() || undefined });
       setDismissed(true);
     } finally {
       setSaving(false);
@@ -38,7 +46,7 @@ export function BirthDetailsPrompt() {
   };
 
   const skip = () => {
-    localStorage.setItem(DISMISS_KEY, '1');
+    localStorage.setItem(DISMISS_KEY, String(Date.now()));
     setDismissed(true);
   };
 
@@ -52,6 +60,10 @@ export function BirthDetailsPrompt() {
           Share your birth details once — we'll suggest pujas matched to your <strong className="text-text-primary">janma nakshatra</strong> on the Pujas page.
         </p>
         <div className="flex flex-col gap-3">
+          <label className="flex flex-col gap-1">
+            <span className="form-label">What should we call you?</span>
+            <input type="text" className="form-input" placeholder="Your name" value={editName} onChange={(e) => setEditName(e.target.value)} />
+          </label>
           <label className="flex flex-col gap-1">
             <span className="form-label">Date of Birth</span>
             <input type="date" className="form-input" value={dob} onChange={(e) => setDob(e.target.value)} required />

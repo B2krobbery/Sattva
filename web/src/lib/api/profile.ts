@@ -11,6 +11,7 @@ export interface Profile {
   birthDate?: string;
   birthTime?: string;
   birthPlace?: string;
+  avatarPath?: string;
 }
 
 export interface Donation {
@@ -55,9 +56,9 @@ const CONTRIBUTION_ERROR_MESSAGES: Record<string, string> = {
 };
 
 export async function getProfile(): Promise<{ profile: Profile | null }> {
-  const { data, error } = await supabase.from('profiles').select('id,display_name,city,gotra,nakshatra,phone,birth_date,birth_time,birth_place').maybeSingle();
+  const { data, error } = await supabase.from('profiles').select('id,display_name,city,gotra,nakshatra,phone,birth_date,birth_time,birth_place,avatar_path').maybeSingle();
   if (error) throw error;
-  return { profile: data ? { id: data.id, displayName: data.display_name, city: data.city, gotra: data.gotra, nakshatra: data.nakshatra, phone: data.phone, birthDate: data.birth_date, birthTime: data.birth_time, birthPlace: data.birth_place } : null };
+  return { profile: data ? { id: data.id, displayName: data.display_name, city: data.city, gotra: data.gotra, nakshatra: data.nakshatra, phone: data.phone, birthDate: data.birth_date, birthTime: data.birth_time, birthPlace: data.birth_place, avatarPath: data.avatar_path } : null };
 }
 
 export async function updateProfile(profile: Partial<Profile>): Promise<{ success: boolean }> {
@@ -75,9 +76,30 @@ export async function updateProfile(profile: Partial<Profile>): Promise<{ succes
     birth_date: profile.birthDate || null,
     birth_time: profile.birthTime || null,
     birth_place: profile.birthPlace || null,
+    phone: profile.phone || null,
+    avatar_path: profile.avatarPath || null,
   }).eq('id', userId);
   if (error) throw error;
   return { success: true };
+}
+
+// Uploads to avatars/{uid}/ and returns the storage path (store in
+// profiles.avatar_path). The bucket is public-read; write is user-scoped.
+export async function uploadAvatar(file: File): Promise<{ path: string; publicUrl: string }> {
+  const { data: userData } = await supabase.auth.getUser();
+  const userId = userData.user?.id;
+  if (!userId) throw new Error('not_authenticated');
+  const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+  const path = `${userId}/avatar-${Date.now()}.${ext}`;
+  const { error } = await supabase.storage.from('avatars').upload(path, file, { upsert: true, contentType: file.type });
+  if (error) throw error;
+  const { data } = supabase.storage.from('avatars').getPublicUrl(path);
+  return { path, publicUrl: data.publicUrl };
+}
+
+export function avatarPublicUrl(path?: string | null): string | null {
+  if (!path) return null;
+  return supabase.storage.from('avatars').getPublicUrl(path).data.publicUrl;
 }
 
 export async function getDonations(): Promise<{ donations: Donation[] }> {

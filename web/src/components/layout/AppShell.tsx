@@ -3,14 +3,22 @@ import { NavLink, Outlet } from 'react-router-dom';
 import { Home, Flame, MapPin, HeartHandshake, User, Sparkles, Compass, LogIn } from 'lucide-react';
 import { RishiChatModal } from '@/features/ai/RishiChatModal';
 import { useAuth } from '@/features/auth/AuthContext';
+import { useQuery } from '@tanstack/react-query';
+import { getProfile, avatarPublicUrl } from '@/lib/api/profile';
 import { cn } from '@/lib/utils';
 import { motion } from 'motion/react';
 
 export function AppShell() {
   const [rishiOpen, setRishiOpen] = useState(false);
   const { user } = useAuth();
+  const { data: profileData } = useQuery({
+    queryKey: ['profile'],
+    queryFn: getProfile,
+    enabled: !!user,
+  });
   const displayName =
-    (user?.user_metadata?.display_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Devotee') as string;
+    (profileData?.profile?.displayName || user?.user_metadata?.display_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Devotee') as string;
+  const avatarUrl = avatarPublicUrl(profileData?.profile?.avatarPath) || (user?.user_metadata?.avatar_url as string | undefined);
 
   const navItems = [
     { name: 'Home', path: '/', icon: Home },
@@ -43,10 +51,12 @@ export function AppShell() {
           {user ? (
             <NavLink
               to="/profile"
-              className="relative flex items-center justify-center w-8 h-8 rounded-full bg-terracotta text-white text-xs font-bold"
+              className="relative flex items-center justify-center w-8 h-8 rounded-full bg-terracotta text-white text-xs font-bold overflow-hidden"
               aria-label="Signed in — open profile"
             >
-              {displayName.slice(0, 1).toUpperCase()}
+              {avatarUrl
+                ? <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
+                : displayName.slice(0, 1).toUpperCase()}
               <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-tulsi border-2 border-surface" />
             </NavLink>
           ) : (
@@ -97,8 +107,10 @@ export function AppShell() {
               title={`Signed in as ${user.email}`}
               className="flex items-center gap-3 mb-4 px-3 py-2.5 rounded-lg bg-surface-subtle border border-border-subtle hover:border-terracotta/40 transition-colors"
             >
-              <span className="relative flex items-center justify-center w-9 h-9 rounded-full bg-terracotta text-white text-sm font-bold shrink-0">
-                {displayName.slice(0, 1).toUpperCase()}
+              <span className="relative flex items-center justify-center w-9 h-9 rounded-full bg-terracotta text-white text-sm font-bold shrink-0 overflow-hidden">
+                {avatarUrl
+                  ? <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
+                  : displayName.slice(0, 1).toUpperCase()}
                 <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-tulsi border-2 border-surface" />
               </span>
               <span className="min-w-0">

@@ -6,6 +6,7 @@ import { getProfile } from '@/lib/api/profile';
 
 const FIELDS: { key: string; label: string }[] = [
   { key: 'displayName', label: 'name' },
+  { key: 'avatarPath', label: 'photo' },
   { key: 'phone', label: 'phone' },
   { key: 'city', label: 'city' },
   { key: 'gotra', label: 'gotra' },
