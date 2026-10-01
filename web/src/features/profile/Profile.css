@@ -51,7 +51,7 @@
 
 .devotee-name-title {
   font-family: var(--font-family-serif);
-  font-size: 24px;
+  font-size: 1.5rem;
   font-weight: 700;
   color: var(--color-text-primary);
   margin-bottom: 4px;
@@ -60,7 +60,7 @@
 }
 
 .devotee-tagline {
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: var(--color-text-secondary);
   margin-bottom: 16px;
   position: relative;
@@ -89,7 +89,7 @@
 .profile-tab-btn {
   flex: 0 0 auto;
   padding: 10px 16px;
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
   border-radius: var(--radius-full);
   color: var(--color-text-secondary);
@@ -128,7 +128,7 @@
   align-items: center;
   gap: 6px;
   padding: 8px 14px;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
   border-radius: var(--radius-full);
   color: var(--color-text-secondary);
@@ -162,14 +162,14 @@
 
 .activity-meta-title {
   font-family: var(--font-family-serif);
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 600;
   color: var(--color-text-primary);
   margin-bottom: 3px;
 }
 
 .activity-meta-sub {
-  font-size: 12px;
+  font-size: 0.75rem;
   color: var(--color-text-muted);
 }
 
@@ -194,7 +194,7 @@
   padding: 12px 24px;
   border-radius: var(--radius-full);
   font-weight: 600;
-  font-size: 13px;
+  font-size: 0.8125rem;
   width: 100%;
   margin-top: 12px;
   transition: all 0.2s ease;
@@ -233,13 +233,13 @@
 
 .profile-empty-title {
   font-family: var(--font-family-serif);
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: 600;
   color: var(--color-text-primary);
 }
 
 .profile-empty-desc {
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: var(--color-text-secondary);
   max-width: 320px;
   line-height: 1.5;

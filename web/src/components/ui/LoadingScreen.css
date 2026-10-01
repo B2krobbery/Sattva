@@ -65,7 +65,7 @@
 
 .sacred-om {
   font-family: var(--font-family-serif);
-  font-size: 26px;
+  font-size: 1.625rem;
   color: var(--color-accent-terracotta);
   font-weight: 700;
   user-select: none;
@@ -73,7 +73,7 @@
 
 .loading-title {
   font-family: var(--font-family-serif);
-  font-size: 20px;
+  font-size: 1.25rem;
   font-weight: 400;
   color: var(--color-primary);
   margin-bottom: 6px;
@@ -82,7 +82,7 @@
 
 .loading-subtext {
   font-family: var(--font-family-sans);
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: var(--color-outline);
   letter-spacing: 0.02em;
 }

@@ -108,7 +108,7 @@
   align-items: center;
   justify-content: center;
   font-family: var(--font-family-serif);
-  font-size: 20px;
+  font-size: 1.25rem;
   font-weight: 700;
 }
 
@@ -124,7 +124,7 @@
 
 .sankalpa-title {
   font-family: var(--font-family-serif);
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 600;
   color: var(--color-terracotta);
   display: flex;

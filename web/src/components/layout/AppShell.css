@@ -29,7 +29,7 @@
 
 .brand-om {
   font-family: var(--font-family-serif);
-  font-size: 24px;
+  font-size: 1.5rem;
   color: var(--color-terracotta);
   font-weight: 700;
   line-height: 1;
@@ -37,7 +37,7 @@
 
 .brand-title {
   font-family: var(--font-family-serif);
-  font-size: 20px;
+  font-size: 1.25rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   color: var(--color-text-primary);
@@ -57,7 +57,7 @@
   border: 1px solid var(--color-border);
   padding: 6px 12px;
   border-radius: var(--radius-full);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 500;
   color: var(--color-text-secondary);
 }
@@ -91,7 +91,7 @@
   color: var(--color-text-gold);
   padding: 6px 14px;
   border-radius: var(--radius-full);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -125,7 +125,7 @@
 
 .desktop-brand-motto {
   font-family: var(--font-family-mantra);
-  font-size: 11px;
+  font-size: 0.6875rem;
   color: var(--color-gold);
   letter-spacing: 0.1em;
   margin-top: 4px;
@@ -145,7 +145,7 @@
   padding: 12px 16px;
   border-radius: var(--radius-md);
   color: var(--color-text-secondary);
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 500;
   transition: all 0.2s ease;
 }
@@ -165,7 +165,7 @@
 .desktop-footer {
   padding: 16px 12px;
   border-top: 1px solid var(--color-border-subtle);
-  font-size: 12px;
+  font-size: 0.75rem;
   color: var(--color-text-muted);
 }
 
@@ -218,7 +218,7 @@
 }
 
 .bottom-nav-item span {
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 600;
   letter-spacing: 0.02em;
 }

@@ -20,12 +20,12 @@
 
 .seva-hero-banner h1 {
   color: #FFFFFF;
-  font-size: 28px;
+  font-size: 1.75rem;
 }
 
 .seva-hero-banner p {
   color: rgba(255, 255, 255, 0.85);
-  font-size: 14px;
+  font-size: 0.875rem;
   max-width: 600px;
   line-height: 1.55;
 }
@@ -96,7 +96,7 @@
 
 .seva-card-title {
   font-family: var(--font-family-serif);
-  font-size: 20px;
+  font-size: 1.25rem;
   color: var(--color-text-primary);
 }
 
@@ -106,13 +106,13 @@
   border: 1px solid rgba(184, 134, 11, 0.3);
   padding: 4px 12px;
   border-radius: var(--radius-full);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 700;
   white-space: nowrap;
 }
 
 .seva-card-desc {
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: var(--color-text-secondary);
   line-height: 1.5;
 }
@@ -162,14 +162,14 @@
 }
 
 .trust-text-title {
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
   color: var(--color-text-primary);
   margin-bottom: 2px;
 }
 
 .trust-text-desc {
-  font-size: 12px;
+  font-size: 0.75rem;
   color: var(--color-text-muted);
   line-height: 1.4;
 }
