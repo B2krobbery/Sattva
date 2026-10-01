@@ -85,8 +85,8 @@ export function AppShell() {
       </nav>
 
       {/* Main Content Area */}
-      <main className="flex-1 md:ml-64 w-full pb-[calc(80px+env(safe-area-inset-bottom,0px))] md:pb-8">
-        <div className="max-w-4xl mx-auto p-4 md:p-8 min-h-[calc(100vh-140px)]">
+      <main className="flex-1 md:ml-64 pb-[calc(80px+env(safe-area-inset-bottom,0px))] md:pb-8">
+        <div className="p-4 md:p-8 xl:px-12 2xl:px-16 min-h-[calc(100vh-140px)]">
           <Outlet />
         </div>
       </main>

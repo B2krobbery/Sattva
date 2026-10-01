@@ -106,6 +106,7 @@ PostgREST reminder: to-one embeds return objects, not arrays (`row.temples?.name
 
 - `index.css` had `* { margin: 0; padding: 0 }` as **unlayered** CSS, which beats all `@layer utilities` rules — silently killed every Tailwind margin utility (incl. `md:ml-64`, `mx-auto` centering). Removed; Tailwind preflight already resets. If spacing ever looks wrong on desktop, suspect cascade-layer issues first.
 - Minimum text size is now 11px (`text-[10px]`→`text-[11px]` on nav labels, badges, chips).
+- Main content is full-bleed (`p-4 md:p-8 xl:px-12 2xl:px-16`, no max-width cap) — sidebar `md:ml-64` relies on `main` having NO `w-full` (auto width fills minus margin). Fluid root font: `html { font-size: clamp(16px, 0.35vw+13.3px, 19px) }` scales all rem utilities with viewport.
 
 ## Android edge-to-edge & theme
 
