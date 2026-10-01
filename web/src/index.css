@@ -166,10 +166,11 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Fluid root type scale: rem-based utilities scale with viewport.
-   16px below 768px, ramps ~0.35vw to a 19px ceiling at ~1920px. */
+/* Fluid root type scale — the % term multiplies the user's browser
+   text-size preference (accessibility) and the vw term adds the
+   viewport ramp. 100% at ≤768px, ~119% at 1440px, 135% cap ~2225px+. */
 html {
-  font-size: clamp(16px, 0.35vw + 13.3px, 19px);
+  font-size: clamp(100%, calc(78.6% + 0.446vw), 135%);
 }
 
 body {
