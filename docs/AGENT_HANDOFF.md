@@ -96,6 +96,13 @@ PostgREST reminder: to-one embeds return objects, not arrays (`row.temples?.name
 - **Android emulator E2E (Pixel_9 AVD)**: debug APK installs, launches, safe-area insets correct (see below), `/profile` redirects signed-out users to `/login`, email/password sign-in against hosted Supabase succeeds and the session persists across app reinstalls. Demo account `pratha.demo.client@gmail.com` (server-confirmed email) is the client-testing credential.
 - Emulator caveat: the WebView renderer occasionally crashes on cold boot under the software GPU (`swiftshader`), freezing the app on "Restoring Sacred Session". Force-stop + relaunch recovers. Verify on hardware before assuming an app bug.
 
+## Access model (updated 2026-10-01)
+
+- Browsing is **public** again (client request — no login on entry). `/profile` alone is auth-gated; transactional RPCs remain server-side RLS-enforced.
+- Login screen has **"Explore Demo Account"** — one-tap sign-in as `pratha.demo.client@gmail.com` (RLS-scoped; rotate after client testing). Hardcoded creds in `Auth.tsx` by design.
+- Session identity: desktop sidebar card (name + "Signed in · email"), mobile header avatar + status dot; signed-out shows "Sign In" affordances.
+- `vercel.json` ships CSP (script-src 'self' + sha256 of the `index.html` theme inline script — **regenerate the hash if that script changes**), frame-src limited to youtube.com embeds, nosniff, DENY framing, Permissions-Policy.
+
 ## Deployment (Vercel)
 
 - **Live: `https://pratha-two.vercel.app`** — project `pratha` (team `marvelpokemaster-3377s-projects`), git-connected to `marvelpokemaster/Pratha`; pushes to `main` auto-deploy. Prod env vars set: `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`.

@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { signInWithGoogle } from '@/lib/auth/oauth';
+
+// Demo account for client evaluation. RLS-scoped like any user — no
+// privileged access. Rotate after client testing.
+const DEMO_EMAIL = 'pratha.demo.client@gmail.com';
+const DEMO_PASSWORD = 'PrathaDemo!2026';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
@@ -255,6 +260,30 @@ export function Auth() {
           >
             <span>{loading ? 'Processing...' : (isLogin ? 'Enter App' : 'Begin Journey')}</span>
             <ArrowRight size={16} />
+          </button>
+
+          <button
+            type="button"
+            className="btn-secondary auth-submit-btn"
+            disabled={loading}
+            onClick={async () => {
+              setError('');
+              setNotice('');
+              setLoading(true);
+              try {
+                const { error: demoError } = await supabase.auth.signInWithPassword({
+                  email: DEMO_EMAIL,
+                  password: DEMO_PASSWORD,
+                });
+                if (demoError) throw demoError;
+                navigate('/');
+              } catch (err) {
+                setError(err instanceof Error ? err.message : 'Demo sign-in failed. Please try again.');
+                setLoading(false);
+              }
+            }}
+          >
+            <span>{loading ? 'Signing in...' : 'Explore Demo Account'}</span>
           </button>
 
           <button
