@@ -95,20 +95,65 @@ function moonLongitude(d: number): number {
   return norm(lon);
 }
 
-// Ascendant (lagna), tropical ecliptic longitude.
-function ascendant(jd: number, lat: number, lon: number): number {
+// Lagna: scan the ecliptic for the point crossing the eastern
+// horizon (alt 0, hour angle < 0). Avoids closed-form quadrant errors.
+function ascendantScan(jd: number, lat: number, lon: number): number | null {
   const T = (jd - 2451545.0) / 36525;
-  // Greenwich mean sidereal time, degrees.
+  const eps = (23.4392911 - 0.0130042 * T) * DEG;
   const gmst = norm(280.46061837 + 360.98564736629 * (jd - 2451545.0) +
     0.000387933 * T * T);
   const lst = norm(gmst + lon) * DEG;
-  const eps = (23.4392911 - 0.0130042 * T) * DEG;
   const phi = lat * DEG;
-  const asc = Math.atan2(
-    Math.cos(lst),
-    -Math.sin(lst) * Math.cos(eps) - Math.tan(phi) * Math.sin(eps),
-  );
-  return norm(asc / DEG + 180);
+  let prevAlt: number | null = null;
+  for (let i = 0; i <= 3600; i++) {
+    const lam = (i / 10) * DEG;
+    const ra = Math.atan2(Math.sin(lam) * Math.cos(eps), Math.cos(lam));
+    const dec = Math.asin(Math.sin(lam) * Math.sin(eps));
+    const H = lst - ra;
+    const alt = Math.sin(phi) * Math.sin(dec) + Math.cos(phi) * Math.cos(dec) * Math.cos(H);
+    // Any zero crossing with sin(H)<0 is the eastern horizon (ascendant);
+    // altitude decreases through it as ecliptic longitude increases.
+    if (prevAlt !== null && (prevAlt < 0) !== (alt < 0) && Math.sin(H) < 0) {
+      return i / 10;
+    }
+    prevAlt = alt;
+  }
+  return null;
+}
+
+// Offline coordinates for major Indian cities (fallback before Nominatim).
+const CITY_COORDS: Record<string, [number, number]> = {
+  "varanasi": [25.3176, 82.9739], "kashi": [25.3176, 82.9739],
+  "delhi": [28.6139, 77.209], "new delhi": [28.6139, 77.209],
+  "mumbai": [19.076, 72.8777], "kolkata": [22.5726, 88.3639],
+  "chennai": [13.0827, 80.2707], "bengaluru": [12.9716, 77.5946],
+  "bangalore": [12.9716, 77.5946], "hyderabad": [17.385, 78.4867],
+  "pune": [18.5204, 73.8567], "ahmedabad": [23.0225, 72.5714],
+  "jaipur": [26.9124, 75.7873], "lucknow": [26.8467, 80.9462],
+  "vrindavan": [27.581, 77.7006], "mathura": [27.4924, 77.6737],
+  "ujjain": [23.1765, 75.7885], "tirupati": [13.6288, 79.4192],
+  "haridwar": [29.9457, 78.1642], "rishikesh": [30.0869, 78.2676],
+  "prayagraj": [25.4358, 81.8463], "allahabad": [25.4358, 81.8463],
+  "ayodhya": [26.7922, 82.1998], "puri": [19.8135, 85.8312],
+  "madurai": [9.9252, 78.1198], "kochi": [9.9312, 76.2673],
+  "nagpur": [21.1458, 79.0882], "indore": [22.7196, 75.8577],
+  "patna": [25.5941, 85.1376], "surat": [21.1702, 72.8311],
+  "nashik": [19.9975, 73.7898], "goa": [15.2993, 74.124],
+};
+
+function lookupPlace(place: string): { lat: number; lon: number } | null {
+  const q = place.toLowerCase();
+  for (const [name, [lat, lon]] of Object.entries(CITY_COORDS)) {
+    if (q.includes(name)) return { lat, lon };
+  }
+  return null;
+}
+
+// Rough timezone estimate: IST inside India's bounding box, otherwise
+// longitude-based (nearest half-hour zone per 7.5°).
+function estimateTzOffsetMin(lat: number, lon: number): number {
+  if (lat >= 6 && lat <= 37.5 && lon >= 68 && lon <= 97.5) return 330;
+  return Math.round(lon / 7.5) * 30;
 }
 
 const NAKSHATRAS: { name: string; deity: string; lord: string; worship: string }[] = [
@@ -196,7 +241,8 @@ async function narrate(facts: string): Promise<string | null> {
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: "You are Rishi, a warm Vedic guide in the Pratha app. Given a devotee's computed janma chart facts, explain in 2–3 warm sentences why these puja suggestions suit them. No predictions, no fear language." }] },
         contents: [{ parts: [{ text: facts }] }],
-        generationConfig: { maxOutputTokens: 700 },
+        // gemini-2.5 spends output tokens on thinking; disable it.
+        generationConfig: { maxOutputTokens: 1024, thinkingConfig: { thinkingBudget: 0 } },
       }),
     },
   );
@@ -222,7 +268,7 @@ Deno.serve(async (req: Request) => {
   try { body = await req.json(); } catch { return jsonResponse({ error: "Invalid JSON body" }, 400); }
 
   let { dob, tob, pob } = body;
-  let tzOffsetMin = typeof body.tzOffsetMin === "number" ? body.tzOffsetMin : 330; // default IST
+  let tzOffsetMin: number | null = typeof body.tzOffsetMin === "number" ? body.tzOffsetMin : null;
 
   // Fall back to saved profile fields.
   if (!dob) {
@@ -242,6 +288,12 @@ Deno.serve(async (req: Request) => {
   const [y, m, d] = dob.split("-").map(Number);
   if (!y || !m || !d) return jsonResponse({ error: "Invalid dob (YYYY-MM-DD)" }, 400);
   const [hh, mm] = (tob || "12:00").split(":").map(Number);
+
+  // Resolve birth place: offline city table first, Nominatim as fallback.
+  const geo = pob ? (lookupPlace(pob) ?? await geocode(pob)) : null;
+  if (tzOffsetMin === null) {
+    tzOffsetMin = geo ? estimateTzOffsetMin(geo.lat, geo.lon) : 330; // default IST
+  }
 
   const localHours = (isNaN(hh) ? 12 : hh) + (isNaN(mm) ? 0 : mm) / 60;
   const utHours = localHours - tzOffsetMin / 60;
@@ -266,10 +318,9 @@ Deno.serve(async (req: Request) => {
 
   // Lagna needs coordinates; geocode place of birth if provided.
   let lagna: string | null = null;
-  if (pob) {
-    const geo = await geocode(pob);
-    if (geo) {
-      const ascTrop = ascendant(jd, geo.lat, geo.lon);
+  if (geo) {
+    const ascTrop = ascendantScan(jd, geo.lat, geo.lon);
+    if (ascTrop !== null) {
       const ascSid = norm(ascTrop - ayan);
       lagna = RASHIS[Math.min(11, Math.floor(ascSid / RASHI_SPAN))];
     }
@@ -279,7 +330,7 @@ Deno.serve(async (req: Request) => {
     janmaNakshatra: nak.name, pada, nakshatraDeity: nak.deity, nakshatraLord: nak.lord,
     moonRashi: rashi, sunRashi, tithi: tithiName, lagna,
     suggestedWorship: nak.worship,
-    note: "Low-precision sidereal computation (Lahiri ayanamsa); timezone assumed IST unless tzOffsetMin was supplied.",
+    note: "Low-precision sidereal computation (Lahiri ayanamsa); timezone auto-derived from birthplace (IST within India).",
   };
 
   const narration = await narrate(
