@@ -115,8 +115,8 @@ export function GaushalaDiscovery() {
             <div className="p-5 flex flex-col justify-between flex-1 gap-4">
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="bg-surface-subtle text-text-secondary px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest">{animal.breed}</span>
-                  <span className="bg-surface-subtle text-text-secondary px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest">{animal.ageStr}</span>
+                  <span className="bg-surface-subtle text-text-secondary px-2 py-0.5 rounded text-[11px] font-bold uppercase tracking-widest">{animal.breed}</span>
+                  <span className="bg-surface-subtle text-text-secondary px-2 py-0.5 rounded text-[11px] font-bold uppercase tracking-widest">{animal.ageStr}</span>
                 </div>
                 
                 <motion.h3 layoutId={`name-${animal.id}`} className="font-serif text-xl font-semibold text-text-primary mb-1">

@@ -73,7 +73,7 @@ export function SevaExperience() {
           ].map((pkg, i) => (
             <Card key={i} className={`relative flex flex-col p-6 md:p-8 transition-transform hover:-translate-y-1 hover: ${pkg.featured ? 'border-terracotta shadow-lg ring-1 ring-terracotta' : 'border-border'}`}>
               {pkg.featured && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-terracotta text-white px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-terracotta text-white px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-widest">
                   Most Preferred
                 </div>
               )}

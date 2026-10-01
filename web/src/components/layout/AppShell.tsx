@@ -110,7 +110,7 @@ export function AppShell() {
                 >
                   <item.icon size={22} strokeWidth={isActive ? 2.5 : 2} />
                 </motion.div>
-                <span className="text-[10px] font-semibold tracking-wide">{item.name}</span>
+                <span className="text-[11px] font-semibold tracking-wide">{item.name}</span>
               </>
             )}
           </NavLink>

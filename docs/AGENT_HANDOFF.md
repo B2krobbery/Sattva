@@ -96,6 +96,16 @@ PostgREST reminder: to-one embeds return objects, not arrays (`row.temples?.name
 - **Android emulator E2E (Pixel_9 AVD)**: debug APK installs, launches, safe-area insets correct (see below), `/profile` redirects signed-out users to `/login`, email/password sign-in against hosted Supabase succeeds and the session persists across app reinstalls. Demo account `pratha.demo.client@gmail.com` (server-confirmed email) is the client-testing credential.
 - Emulator caveat: the WebView renderer occasionally crashes on cold boot under the software GPU (`swiftshader`), freezing the app on "Restoring Sacred Session". Force-stop + relaunch recovers. Verify on hardware before assuming an app bug.
 
+## Deployment (Vercel)
+
+- `web/vercel.json` — Vite SPA config: `dist` output, catch-all rewrite to `index.html`, immutable asset caching. Set Vercel project **Root Directory to `web/`**. Env vars (optional — source has fallbacks): `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`.
+- After first deploy, add the Vercel domain to Supabase Auth Site URL / redirect URLs or Google OAuth + magic links won't return to the web app.
+
+## Known layout trap (fixed 2026-10-01)
+
+- `index.css` had `* { margin: 0; padding: 0 }` as **unlayered** CSS, which beats all `@layer utilities` rules — silently killed every Tailwind margin utility (incl. `md:ml-64`, `mx-auto` centering). Removed; Tailwind preflight already resets. If spacing ever looks wrong on desktop, suspect cascade-layer issues first.
+- Minimum text size is now 11px (`text-[10px]`→`text-[11px]` on nav labels, badges, chips).
+
 ## Android edge-to-edge & theme
 
 - `@capawesome/capacitor-android-edge-to-edge-support` is required on Android 15+: Android WebView never populates `env(safe-area-inset-*)`; the plugin injects real insets so the existing `env()` CSS works. Without it the header renders under the status bar.

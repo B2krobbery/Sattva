@@ -173,7 +173,7 @@ export function PujaDiscovery() {
               {puja.specialTag && (
                 <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 flex items-center gap-1.5 shadow-sm">
                   <span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse" />
-                  <span className="text-[10px] font-bold text-white uppercase tracking-widest">{puja.specialTag}</span>
+                  <span className="text-[11px] font-bold text-white uppercase tracking-widest">{puja.specialTag}</span>
                 </div>
               )}
             </div>
@@ -199,7 +199,7 @@ export function PujaDiscovery() {
 
               <div className="flex items-center justify-between pt-4 border-t border-border mt-auto">
                 <div>
-                  <span className="text-[10px] uppercase font-bold tracking-widest text-text-muted block mb-0.5">Sankalpa Dakshina</span>
+                  <span className="text-[11px] uppercase font-bold tracking-widest text-text-muted block mb-0.5">Sankalpa Dakshina</span>
                   <span className="font-serif font-bold text-xl text-text-primary">₹{puja.priceRupees}</span>
                 </div>
 
