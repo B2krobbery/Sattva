@@ -168,7 +168,7 @@ export function PujaDiscovery() {
           </p>
           {kundali.narration && (
             <p className="text-sm text-text-muted leading-relaxed italic border-l-2 border-gold/40 pl-3">
-              {kundali.narration}
+              {kundali.narration.replace(/\*\*/g, '')}
             </p>
           )}
         </motion.section>

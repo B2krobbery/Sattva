@@ -5,6 +5,7 @@ import { Capacitor } from '@capacitor/core';
 import { App as CapApp } from '@capacitor/app';
 import { AuthProvider, useAuth } from '@/features/auth/AuthContext';
 import { AppShell } from '@/components/layout/AppShell';
+import { BirthDetailsPrompt } from '@/components/auth/BirthDetailsPrompt';
 import { handleAuthDeepLink } from '@/lib/auth/oauth';
 
 import { Home } from '@/features/home/Home';
@@ -52,6 +53,7 @@ export function PrathaAppContent() {
         element={
           <ProtectedRoute>
             <AppShell />
+            <BirthDetailsPrompt />
           </ProtectedRoute>
         }
       >
