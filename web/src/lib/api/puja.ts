@@ -23,6 +23,7 @@ export interface Puja {
   devoteesCount?: string;
   requiresSankalpa?: boolean;
   requiresNakshatra?: boolean;
+  offeringKind?: string;
   availableDays?: number[]; // 0=Sun … 6=Sat, mirrors puja_offerings.available_days
   leadTimeDays?: number;
   maxPerDay?: number | null;
@@ -89,6 +90,7 @@ export async function getPujas(category?: string, search?: string): Promise<{ pu
         durationStr: row.duration_min ? `${row.duration_min} minutes` : undefined,
         requiresSankalpa: row.requires_sankalpa ?? false,
         requiresNakshatra: row.requires_nakshatra ?? false,
+        offeringKind: row.offering_kind ?? undefined,
         availableDays: row.available_days ?? [0, 1, 2, 3, 4, 5, 6],
         leadTimeDays: row.lead_time_days ?? 0,
         maxPerDay: row.max_per_day ?? null,

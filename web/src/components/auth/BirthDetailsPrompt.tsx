@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Sparkles } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { getProfile, updateProfile } from '@/lib/api/profile';
@@ -17,6 +17,7 @@ function isSnoozed(): boolean {
 // Feeds the /pujas "For Your Janma" recommendations.
 export function BirthDetailsPrompt() {
   const { user, loading } = useAuth();
+  const queryClient = useQueryClient();
   const [dismissed, setDismissed] = useState(isSnoozed);
   const [dob, setDob] = useState('');
   const [tob, setTob] = useState('');
@@ -39,6 +40,8 @@ export function BirthDetailsPrompt() {
     setSaving(true);
     try {
       await updateProfile({ birthDate: dob, birthTime: tob, birthPlace: pob, displayName: editName.trim() || undefined });
+      await queryClient.invalidateQueries({ queryKey: ['profile'] });
+      await queryClient.invalidateQueries({ queryKey: ['janma-chart'] });
       setDismissed(true);
     } finally {
       setSaving(false);

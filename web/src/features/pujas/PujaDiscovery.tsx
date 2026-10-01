@@ -19,8 +19,8 @@ export function PujaDiscovery() {
   const [activePuja, setActivePuja] = useState<Puja | null>(null);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['pujas', selectedCategory],
-    queryFn: () => getPujas(selectedCategory),
+    queryKey: ['pujas'],
+    queryFn: () => getPujas(),
   });
 
   const { user } = useAuth();
@@ -37,7 +37,30 @@ export function PujaDiscovery() {
     staleTime: 24 * 60 * 60 * 1000,
   });
 
-  const categories = ['All', 'Popular', 'Upcoming', 'Special', 'By Temple'];
+  // Nakshatra lord / deity → search keywords matched against offering
+  // name+description+significance. Drives the "For You" janma filter.
+  const LORD_KEYWORDS: Record<string, string[]> = {
+    Ketu: ['ganesha', 'ganapathi', 'ketu', 'mula', 'gandmool', 'navagraha', 'shanti'],
+    Venus: ['lakshmi', 'bhagavathi', 'devi', 'shukra', 'venus'],
+    Sun: ['surya', 'aditya', 'navagraha'],
+    Moon: ['shiva', 'chandra', 'rudra', 'mrityunjaya', 'soma'],
+    Mars: ['hanuman', 'mangal', 'subramanya', 'shiva', 'rudra'],
+    Rahu: ['durga', 'rahu', 'bhagavathi', 'navagraha', 'saraswati'],
+    Jupiter: ['vishnu', 'brihaspati', 'guru', 'sahasranama'],
+    Saturn: ['shani', 'hanuman', 'navagraha', 'gau ', 'graha'],
+    Mercury: ['vishnu', 'ganesha', 'budha', 'naga', 'sahasranama'],
+  };
+  const janmaKeywords = kundali ? [
+    ...(LORD_KEYWORDS[kundali.chart.nakshatraLord] ?? []),
+    kundali.chart.janmaNakshatra.toLowerCase(),
+    kundali.chart.nakshatraDeity.toLowerCase(),
+  ] : [];
+
+  const categories = [
+    'All',
+    ...(janmaKeywords.length ? ['For You'] : []),
+    'Nakshatra Pujas', 'Popular', 'Special', 'Archana', 'Abhishekam', 'Gau Seva',
+  ];
 
   const defaultPujas: Puja[] = [
     {
@@ -115,9 +138,20 @@ export function PujaDiscovery() {
   ];
 
   const pujas = (data?.pujas && data.pujas.length > 0) ? data.pujas : defaultPujas;
-  const filteredPujas = selectedCategory === 'All' 
-    ? pujas 
-    : pujas.filter(p => p.category === selectedCategory || p.specialTag?.includes(selectedCategory));
+  const pujaText = (p: Puja) => [p.title, p.description, p.significance, p.templeName].filter(Boolean).join(' ').toLowerCase();
+  const filteredPujas = (() => {
+    switch (selectedCategory) {
+      case 'All': return pujas;
+      case 'For You':
+        return janmaKeywords.length
+          ? pujas.filter(p => janmaKeywords.some(k => pujaText(p).includes(k)))
+          : [];
+      case 'Nakshatra Pujas': return pujas.filter(p => p.requiresNakshatra);
+      case 'Popular': return pujas.filter(p => p.isFeatured);
+      case 'Gau Seva': return pujas.filter(p => p.offeringKind?.startsWith('gau'));
+      default: return pujas.filter(p => p.offeringKind === selectedCategory.toLowerCase());
+    }
+  })();
 
   const getCuratedPujaImage = (p: Puja) => {
     const title = (p.title || '').toLowerCase();
@@ -192,9 +226,11 @@ export function PujaDiscovery() {
               key={cat}
               className={cn(
                 "px-5 py-2.5 rounded-full text-[13px] font-semibold transition-all whitespace-nowrap outline-none focus-visible:ring-2 focus-visible:ring-terracotta border",
-                selectedCategory === cat 
-                  ? "bg-terracotta text-white border-terracotta " 
-                  : "bg-surface border-border text-text-secondary hover:text-text-primary hover:bg-surface-subtle"
+                selectedCategory === cat
+                  ? "bg-terracotta text-white border-terracotta"
+                  : cat === 'For You'
+                    ? "bg-gold-light text-gold border-gold/40 hover:bg-gold/10"
+                    : "bg-surface border-border text-text-secondary hover:text-text-primary hover:bg-surface-subtle"
               )}
               onClick={() => setSelectedCategory(cat)}
             >
@@ -207,6 +243,14 @@ export function PujaDiscovery() {
       {/* Pujas List */}
       <motion.section  className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6 mt-2">
         {isLoading && <CardSkeleton count={4} />}
+
+        {!isLoading && filteredPujas.length === 0 && (
+          <div className="md:col-span-2 rounded-2xl border border-dashed border-border bg-surface-subtle p-8 text-center text-sm text-text-secondary">
+            {selectedCategory === 'For You'
+              ? 'No offerings in the catalog match your janma chart yet — try Nakshatra Pujas or All.'
+              : 'No offerings in this category yet.'}
+          </div>
+        )}
 
         {!isLoading && filteredPujas.map((puja) => (
           <Card 
