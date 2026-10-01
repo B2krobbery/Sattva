@@ -23,15 +23,8 @@ import { EventDetail } from '@/features/discover/EventDetail';
 import { FestivalDetail } from '@/features/discover/FestivalDetail';
 import { LiveDarshan, LiveDarshanDetail } from '@/features/discover/LiveDarshan';
 
-// Shell wrapper: keeps routes public; transactional actions prompt for sign-in.
+// Auth gate: the whole app requires a signed-in session.
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { loading } = useAuth();
-  if (loading) return <LoadingScreen message="Restoring Sacred Session..." subtext="Connecting to Pratha" />;
-  return <>{children}</>;
-};
-
-// Routes that only make sense for a signed-in user.
-const RequireAuth = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
   if (loading) return <LoadingScreen message="Restoring Sacred Session..." subtext="Connecting to Pratha" />;
   if (!user) return <Navigate to="/login" replace />;
@@ -66,7 +59,7 @@ export function PrathaAppContent() {
         <Route path="/gaushala" element={<GaushalaDiscovery />} />
         <Route path="/gaushala/animal/:id" element={<AnimalPassport />} />
         <Route path="/seva" element={<SevaExperience />} />
-        <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
+        <Route path="/profile" element={<Profile />} />
       </Route>
 
       {/* Fallback route */}

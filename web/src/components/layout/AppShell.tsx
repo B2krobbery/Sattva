@@ -1,12 +1,16 @@
 import { useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { Home, Flame, MapPin, HeartHandshake, User, Sparkles, Compass } from 'lucide-react';
+import { Home, Flame, MapPin, HeartHandshake, User, Sparkles, Compass, LogIn } from 'lucide-react';
 import { RishiChatModal } from '@/features/ai/RishiChatModal';
+import { useAuth } from '@/features/auth/AuthContext';
 import { cn } from '@/lib/utils';
 import { motion } from 'motion/react';
 
 export function AppShell() {
   const [rishiOpen, setRishiOpen] = useState(false);
+  const { user } = useAuth();
+  const displayName =
+    (user?.user_metadata?.display_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Devotee') as string;
 
   const navItems = [
     { name: 'Home', path: '/', icon: Home },
@@ -26,15 +30,36 @@ export function AppShell() {
           <span className="font-serif text-lg font-bold tracking-widest text-text-primary">PRATHA</span>
         </NavLink>
 
-        <motion.button 
-          whileTap={{ scale: 0.95 }}
-          className="flex items-center gap-1.5 bg-surface-subtle text-text-primary px-3 py-1.5 rounded-md text-xs font-medium"
-          onClick={() => setRishiOpen(true)}
-          aria-label="Open Rishi Vedic Assistant"
-        >
-          <Sparkles size={14} />
-          <span>Ask Rishi</span>
-        </motion.button>
+        <div className="flex items-center gap-2">
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            className="flex items-center gap-1.5 bg-surface-subtle text-text-primary px-3 py-1.5 rounded-md text-xs font-medium"
+            onClick={() => setRishiOpen(true)}
+            aria-label="Open Rishi Vedic Assistant"
+          >
+            <Sparkles size={14} />
+            <span>Ask Rishi</span>
+          </motion.button>
+          {user ? (
+            <NavLink
+              to="/profile"
+              className="relative flex items-center justify-center w-8 h-8 rounded-full bg-terracotta text-white text-xs font-bold"
+              aria-label="Signed in — open profile"
+            >
+              {displayName.slice(0, 1).toUpperCase()}
+              <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-tulsi border-2 border-surface" />
+            </NavLink>
+          ) : (
+            <NavLink
+              to="/login"
+              className="flex items-center gap-1 text-xs font-semibold text-terracotta px-2 py-1.5 rounded-md"
+              aria-label="Sign in"
+            >
+              <LogIn size={14} />
+              <span>Sign In</span>
+            </NavLink>
+          )}
+        </div>
       </header>
 
       {/* Desktop Side Navigation */}
@@ -66,6 +91,30 @@ export function AppShell() {
         </div>
 
         <div className="pt-6 border-t border-border-subtle">
+          {user ? (
+            <NavLink
+              to="/profile"
+              title={`Signed in as ${user.email}`}
+              className="flex items-center gap-3 mb-4 px-3 py-2.5 rounded-lg bg-surface-subtle border border-border-subtle hover:border-terracotta/40 transition-colors"
+            >
+              <span className="relative flex items-center justify-center w-9 h-9 rounded-full bg-terracotta text-white text-sm font-bold shrink-0">
+                {displayName.slice(0, 1).toUpperCase()}
+                <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-tulsi border-2 border-surface" />
+              </span>
+              <span className="min-w-0">
+                <span className="block text-sm font-semibold text-text-primary truncate">{displayName}</span>
+                <span className="block text-xs text-tulsi font-medium truncate">Signed in · {user.email}</span>
+              </span>
+            </NavLink>
+          ) : (
+            <NavLink
+              to="/login"
+              className="flex items-center justify-center gap-2 mb-4 px-3 py-2.5 rounded-lg bg-terracotta text-white text-sm font-semibold hover:bg-terracotta-hover transition-colors"
+            >
+              <LogIn size={16} />
+              <span>Sign In to Pratha</span>
+            </NavLink>
+          )}
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2 bg-surface-subtle border border-border-subtle px-3 py-1.5 rounded-full text-xs font-medium text-text-secondary">
               <span className="w-2 h-2 rounded-full bg-tulsi animate-pulse" />
