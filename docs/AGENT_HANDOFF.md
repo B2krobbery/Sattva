@@ -96,6 +96,13 @@ PostgREST reminder: to-one embeds return objects, not arrays (`row.temples?.name
 - **Android emulator E2E (Pixel_9 AVD)**: debug APK installs, launches, safe-area insets correct (see below), `/profile` redirects signed-out users to `/login`, email/password sign-in against hosted Supabase succeeds and the session persists across app reinstalls. Demo account `pratha.demo.client@gmail.com` (server-confirmed email) is the client-testing credential.
 - Emulator caveat: the WebView renderer occasionally crashes on cold boot under the software GPU (`swiftshader`), freezing the app on "Restoring Sacred Session". Force-stop + relaunch recovers. Verify on hardware before assuming an app bug.
 
+## Janma recommendations (migration 014, fn `kundali-ask`)
+
+- `profiles` gained `birth_date/birth_time/birth_place/birth_lat/birth_lon`. NOTE: `profiles` uses **column-scoped UPDATE grants** — new columns need `GRANT UPDATE (...) TO authenticated` or client saves fail with 42501.
+- `kundali-ask` edge fn (JWT-gated): Schlyter low-precision ephemeris → sidereal via Lahiri ayanamsa → nakshatra/pada, moon+sun rashi, tithi, lagna (lagna only if POB geocodes via Nominatim — may be null). Default tz IST; pass `tzOffsetMin` to override. Falls back to saved profile fields when body is empty. Gemini narrates "why".
+- UI: Profile → Settings → "Janma Details" form; `/pujas` shows "For Your Janma" card (or a CTA to add birth details).
+- Accuracy caveat: low-precision (~arc-minutes). For production-grade kundali, swap in a real astrology API (Vedic Rishi / Prokerala) — the chart shape is designed to be replaced server-side.
+
 ## Access model (updated 2026-10-01)
 
 - Browsing is **public** again (client request — no login on entry). `/profile` alone is auth-gated; transactional RPCs remain server-side RLS-enforced.

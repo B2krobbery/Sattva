@@ -15,7 +15,7 @@ import {
   MonitorSmartphone
 } from 'lucide-react';
 import { useThemeMode, setThemeMode } from '@/lib/theme';
-import { getProfile, getDonations, getFamily, addFamilyMember, type Donation, type FamilyMember } from '@/lib/api/profile';
+import { getProfile, updateProfile, getDonations, getFamily, addFamilyMember, type Donation, type FamilyMember } from '@/lib/api/profile';
 import { getBookings, type PujaBooking } from '@/lib/api/puja';
 import { useAuth } from '@/features/auth/AuthContext';
 import { IMAGES } from '@/lib/images';
@@ -29,6 +29,11 @@ export function Profile() {
   const [memberName, setMemberName] = useState('');
   const [memberRelation, setMemberRelation] = useState('Spouse');
   const [memberNakshatra, setMemberNakshatra] = useState('');
+  const [birthDate, setBirthDate] = useState('');
+  const [birthTime, setBirthTime] = useState('');
+  const [birthPlace, setBirthPlace] = useState('');
+  const [birthSaved, setBirthSaved] = useState(false);
+  const [birthInit, setBirthInit] = useState(false);
 
   const { data: profileData } = useQuery({
     queryKey: ['profile'],
@@ -55,6 +60,12 @@ export function Profile() {
   });
 
   const profile = profileData?.profile;
+  if (profile && !birthInit) {
+    setBirthInit(true);
+    setBirthDate(profile.birthDate ?? '');
+    setBirthTime(profile.birthTime ?? '');
+    setBirthPlace(profile.birthPlace ?? '');
+  }
   const displayName = profile?.displayName || user?.user_metadata?.display_name || user?.email?.split('@')[0] || 'Devotee';
   const email = user?.email || 'Registered Devotee';
 
@@ -371,6 +382,38 @@ export function Profile() {
                 </button>
               ))}
             </div>
+          </div>
+
+          <div className="activity-item-card" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 12 }}>
+            <div>
+              <h4 className="activity-meta-title">Janma Details</h4>
+              <p className="activity-meta-sub">Date, time &amp; place of birth — used for puja recommendations (India timezone assumed)</p>
+            </div>
+            <div className="birth-fields">
+              <label>
+                <span className="form-label">Date of Birth</span>
+                <input type="date" className="form-input" value={birthDate} onChange={(e) => { setBirthDate(e.target.value); setBirthSaved(false); }} />
+              </label>
+              <label>
+                <span className="form-label">Time of Birth</span>
+                <input type="time" className="form-input" value={birthTime} onChange={(e) => { setBirthTime(e.target.value); setBirthSaved(false); }} />
+              </label>
+              <label>
+                <span className="form-label">Place of Birth</span>
+                <input type="text" className="form-input" placeholder="Varanasi, India" value={birthPlace} onChange={(e) => { setBirthPlace(e.target.value); setBirthSaved(false); }} />
+              </label>
+            </div>
+            <button
+              type="button"
+              className="btn-secondary"
+              disabled={!birthDate}
+              onClick={async () => {
+                await updateProfile({ birthDate, birthTime, birthPlace });
+                setBirthSaved(true);
+              }}
+            >
+              {birthSaved ? 'Saved — see Pujas for your recommendations' : 'Save Birth Details'}
+            </button>
           </div>
 
           <div className="activity-item-card">

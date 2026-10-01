@@ -1,6 +1,10 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getPujas, type Puja } from '@/lib/api/puja';
+import { getProfile } from '@/lib/api/profile';
+import { getJanmaChart } from '@/lib/api/kundali';
+import { useAuth } from '@/features/auth/AuthContext';
 import { MapPin, ArrowRight, ShieldCheck, Sparkles } from 'lucide-react';
 import { IMAGES } from '@/lib/images';
 import { CardSkeleton } from '@/components/ui/LoadingScreen';
@@ -17,6 +21,20 @@ export function PujaDiscovery() {
   const { data, isLoading } = useQuery({
     queryKey: ['pujas', selectedCategory],
     queryFn: () => getPujas(selectedCategory),
+  });
+
+  const { user } = useAuth();
+  const { data: profileData } = useQuery({
+    queryKey: ['profile'],
+    queryFn: getProfile,
+    enabled: !!user,
+  });
+  const hasBirthDetails = !!profileData?.profile?.birthDate;
+  const { data: kundali } = useQuery({
+    queryKey: ['janma-chart'],
+    queryFn: () => getJanmaChart(),
+    enabled: !!user && hasBirthDetails,
+    staleTime: 24 * 60 * 60 * 1000,
   });
 
   const categories = ['All', 'Popular', 'Upcoming', 'Special', 'By Temple'];
@@ -132,6 +150,39 @@ export function PujaDiscovery() {
           Invoke divine grace through authentic temple ceremonies performed in your name and Gotra by revered priests across sacred sanctums.
         </p>
       </motion.section>
+
+      {/* Janma-based recommendations */}
+      {user && hasBirthDetails && kundali && (
+        <motion.section className="rounded-2xl border border-border-subtle bg-surface p-5 md:p-6 flex flex-col gap-3">
+          <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-gold">
+            <Sparkles size={13} /> For Your Janma
+          </div>
+          <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm text-text-secondary">
+            <span><strong className="text-text-primary">{kundali.chart.janmaNakshatra}</strong> nakshatra (pada {kundali.chart.pada})</span>
+            <span>Moon in <strong className="text-text-primary">{kundali.chart.moonRashi}</strong></span>
+            <span><strong className="text-text-primary">{kundali.chart.tithi}</strong> tithi</span>
+            {kundali.chart.lagna && <span><strong className="text-text-primary">{kundali.chart.lagna}</strong> lagna</span>}
+          </div>
+          <p className="text-sm text-text-secondary leading-relaxed">
+            Suggested worship: {kundali.chart.suggestedWorship}.
+          </p>
+          {kundali.narration && (
+            <p className="text-sm text-text-muted leading-relaxed italic border-l-2 border-gold/40 pl-3">
+              {kundali.narration}
+            </p>
+          )}
+        </motion.section>
+      )}
+      {user && !hasBirthDetails && (
+        <motion.section className="rounded-2xl border border-dashed border-border bg-surface-subtle p-5 md:p-6 flex flex-col md:flex-row md:items-center gap-3 justify-between">
+          <p className="text-sm text-text-secondary leading-relaxed">
+            Want pujas matched to your <strong className="text-text-primary">janma nakshatra</strong>? Add your birth details once.
+          </p>
+          <Link to="/profile" className="btn-secondary whitespace-nowrap inline-flex items-center gap-2">
+            Add Birth Details <ArrowRight size={14} />
+          </Link>
+        </motion.section>
+      )}
 
       {/* Category Filter Pills */}
       <motion.section  className="sticky top-[72px] md:top-0 z-30 bg-background/80 backdrop-blur-xl border-b border-border -mx-4 px-4 md:mx-0 md:px-0 py-2">
