@@ -10,7 +10,9 @@ const NATIVE_REDIRECT = 'pratha://auth/callback';
 // The Google OAuth *Web* client ID — the same client configured on the
 // Google provider in Supabase dashboard. Android also needs an Android-type
 // OAuth client in the same GCP project (package com.utsavam.sattva + SHA-1).
-const GOOGLE_WEB_CLIENT_ID = import.meta.env.VITE_GOOGLE_WEB_CLIENT_ID as string | undefined;
+const GOOGLE_WEB_CLIENT_ID =
+  (import.meta.env.VITE_GOOGLE_WEB_CLIENT_ID as string | undefined) ??
+  '1080658765469-n345v86o4m74fthcj2pj50vfuk4npksg.apps.googleusercontent.com';
 
 export function isAuthDeepLink(url: string): boolean {
   return url.startsWith(NATIVE_REDIRECT);
