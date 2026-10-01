@@ -45,10 +45,9 @@ export async function signInWithGoogle(): Promise<void> {
     // Falls back to the browser OAuth flow if the plugin/config isn't ready.
     try {
       await ensureSocialLogin();
-      const res = await SocialLogin.login({
-        provider: 'google',
-        options: { scopes: ['email', 'profile'] },
-      });
+      // No custom scopes — passing any requires a ModifiedMainActivityForSocialLoginPlugin;
+      // the ID token alone is all signInWithIdToken needs.
+      const res = await SocialLogin.login({ provider: 'google', options: {} });
       const result = res.result as { idToken?: string } | undefined;
       if (!result?.idToken) throw new Error('Google did not return an ID token');
       const { error } = await supabase.auth.signInWithIdToken({
