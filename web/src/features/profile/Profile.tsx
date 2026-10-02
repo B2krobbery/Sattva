@@ -627,23 +627,55 @@ export function Profile() {
                 }}
               />
             </label>
-            <div className="birth-fields">
-              <label>
-                <span className="form-label">Display Name</span>
-                <input type="text" className="form-input" placeholder="Your name" value={editName} onChange={(e) => { setEditName(e.target.value); setProfileSaved(false); }} />
-              </label>
-              <label>
-                <span className="form-label">Phone</span>
-                <input type="tel" className="form-input" placeholder="+91 …" value={editPhone} onChange={(e) => { setEditPhone(e.target.value); setProfileSaved(false); }} />
-              </label>
-              <label>
-                <span className="form-label">City</span>
-                <input type="text" className="form-input" placeholder="Varanasi" value={editCity} onChange={(e) => { setEditCity(e.target.value); setProfileSaved(false); }} />
-              </label>
-              <label>
-                <span className="form-label">Gotra</span>
-                <input type="text" className="form-input" placeholder="Bharadwaj" value={editGotra} onChange={(e) => { setEditGotra(e.target.value); setProfileSaved(false); }} />
-              </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 my-1">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11px] font-semibold text-text-secondary uppercase tracking-wider">
+                  Display Name
+                </label>
+                <input 
+                  type="text" 
+                  className="w-full bg-surface-subtle border border-border rounded-xl px-3.5 py-2.5 text-sm text-text-primary outline-none focus:border-terracotta focus:ring-2 focus:ring-terracotta/20 transition-all placeholder:text-text-muted" 
+                  placeholder="Your name" 
+                  value={editName} 
+                  onChange={(e) => { setEditName(e.target.value); setProfileSaved(false); }} 
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11px] font-semibold text-text-secondary uppercase tracking-wider">
+                  Phone
+                </label>
+                <input 
+                  type="tel" 
+                  className="w-full bg-surface-subtle border border-border rounded-xl px-3.5 py-2.5 text-sm text-text-primary outline-none focus:border-terracotta focus:ring-2 focus:ring-terracotta/20 transition-all placeholder:text-text-muted" 
+                  placeholder="+91 …" 
+                  value={editPhone} 
+                  onChange={(e) => { setEditPhone(e.target.value); setProfileSaved(false); }} 
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11px] font-semibold text-text-secondary uppercase tracking-wider">
+                  City
+                </label>
+                <input 
+                  type="text" 
+                  className="w-full bg-surface-subtle border border-border rounded-xl px-3.5 py-2.5 text-sm text-text-primary outline-none focus:border-terracotta focus:ring-2 focus:ring-terracotta/20 transition-all placeholder:text-text-muted" 
+                  placeholder="Varanasi" 
+                  value={editCity} 
+                  onChange={(e) => { setEditCity(e.target.value); setProfileSaved(false); }} 
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11px] font-semibold text-text-secondary uppercase tracking-wider">
+                  Gotra
+                </label>
+                <input 
+                  type="text" 
+                  className="w-full bg-surface-subtle border border-border rounded-xl px-3.5 py-2.5 text-sm text-text-primary outline-none focus:border-terracotta focus:ring-2 focus:ring-terracotta/20 transition-all placeholder:text-text-muted" 
+                  placeholder="Bharadwaj" 
+                  value={editGotra} 
+                  onChange={(e) => { setEditGotra(e.target.value); setProfileSaved(false); }} 
+                />
+              </div>
             </div>
             <button
               type="button"
@@ -669,19 +701,41 @@ export function Profile() {
               <h4 className="activity-meta-title">Janma Details</h4>
               <p className="activity-meta-sub">Date, time &amp; place of birth — used for puja recommendations (India timezone assumed)</p>
             </div>
-            <div className="birth-fields">
-              <label>
-                <span className="form-label">Date of Birth</span>
-                <input type="date" className="form-input" value={birthDate} onChange={(e) => { setBirthDate(e.target.value); setBirthSaved(false); }} />
-              </label>
-              <label>
-                <span className="form-label">Time of Birth</span>
-                <input type="time" className="form-input" value={birthTime} onChange={(e) => { setBirthTime(e.target.value); setBirthSaved(false); }} />
-              </label>
-              <label>
-                <span className="form-label">Place of Birth</span>
-                <input type="text" className="form-input" placeholder="Varanasi, India" value={birthPlace} onChange={(e) => { setBirthPlace(e.target.value); setBirthSaved(false); }} />
-              </label>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 my-1">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11px] font-semibold text-text-secondary uppercase tracking-wider">
+                  Date of Birth
+                </label>
+                <input 
+                  type="date" 
+                  className="w-full bg-surface-subtle border border-border rounded-xl px-3.5 py-2.5 text-sm text-text-primary outline-none focus:border-terracotta focus:ring-2 focus:ring-terracotta/20 transition-all" 
+                  value={birthDate} 
+                  onChange={(e) => { setBirthDate(e.target.value); setBirthSaved(false); }} 
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11px] font-semibold text-text-secondary uppercase tracking-wider">
+                  Time of Birth
+                </label>
+                <input 
+                  type="time" 
+                  className="w-full bg-surface-subtle border border-border rounded-xl px-3.5 py-2.5 text-sm text-text-primary outline-none focus:border-terracotta focus:ring-2 focus:ring-terracotta/20 transition-all" 
+                  value={birthTime} 
+                  onChange={(e) => { setBirthTime(e.target.value); setBirthSaved(false); }} 
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11px] font-semibold text-text-secondary uppercase tracking-wider">
+                  Place of Birth
+                </label>
+                <input 
+                  type="text" 
+                  className="w-full bg-surface-subtle border border-border rounded-xl px-3.5 py-2.5 text-sm text-text-primary outline-none focus:border-terracotta focus:ring-2 focus:ring-terracotta/20 transition-all placeholder:text-text-muted" 
+                  placeholder="Varanasi, India" 
+                  value={birthPlace} 
+                  onChange={(e) => { setBirthPlace(e.target.value); setBirthSaved(false); }} 
+                />
+              </div>
             </div>
             <button
               type="button"
