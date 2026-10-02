@@ -41,6 +41,10 @@ Applied migrations (all hosted):
 11. `20260926000400_011_booking_rpc_searchpath.sql` — restores `search_path = public, extensions` and generates refs from `gen_random_uuid()` (010 had dropped pgcrypto from the path → `gen_random_bytes does not exist`).
 12. `20260926000500_012_indexes_and_extension_schema.sql` — 39 covering indexes on unindexed FKs + `pg_trgm` moved to `extensions` schema (advisor findings).
 13. `20260926000600_013_edge_secret_accessor.sql` — `supabase_vault` extension + `public.get_edge_secret(text)` SECURITY DEFINER accessor granted to `service_role` only. The `gemini_api_key` vault secret was created via MCP (values never live in migration files).
+14. `20261001000100_014_profile_birth_details.sql` — dob/tob/pob/lat/lon columns + UPDATE grants.
+15. `20261002000100_015_demo_catalog_seed.sql` — 7 temples, 15 puja offerings, 4 festivals, 7 events, 4 live portals, 6 animals, 4 seva campaigns.
+16. `20261003000100_016_referrals.sql` — `profiles.referral_code`, `public.referrals` ledger, `ensure_referral_code`/`record_referral` RPCs (authenticated-only). Applied via MCP `execute_sql`.
+17. `20261003000200_017_notifications.sql` — `pg_net`, `notification_log`, `referrals_notify_credit` trigger → `notify-send` edge fn. Vault: `resend_api_key`, `notify_hook_secret`, `notify_function_url`, `supabase_publishable_key`.
 
 Security model (verified via MCP): RLS enabled on all public tables; six policy helpers executable by anon/authenticated (intended); booking/contribution RPCs authenticated-only; payment/notification functions service-role-only; `profiles` has own-row SELECT/UPDATE only (rows created by `handle_new_user` trigger, so the client uses UPDATE, never UPSERT); bookings/contributions writable only through RPCs.
 
@@ -145,6 +149,14 @@ PostgREST reminder: to-one embeds return objects, not arrays (`row.temples?.name
 - Profile integration: `/profile` gained an **"Invite & Earn"** tab featuring one-click WhatsApp sharing with auspicious invite message, Web Share API (`navigator.share`), clipboard copy buttons with visual feedback, and 108 Punya points merit counter.
 - Home screen prompt: A "Dharma Mitra Referral" banner on `/` directs devotees to `/profile?tab=referral`.
 - Settings form layout fix (2026-10-02): Resolved overlapping inline `<label>` elements in `Profile.tsx` (Edit Profile & Janma Details) by migrating to responsive Tailwind CSS grid layouts (`grid-cols-1 sm:grid-cols-2` and `grid-cols-1 sm:grid-cols-3`) with dedicated `.form-group`, `.form-label`, and `.form-input` definitions in `Profile.css`.
+
+## Server-side referral attribution + engagement emails (added 2026-10-03)
+
+- **Migration 016 (`referrals`)**: `profiles.referral_code` (unique, backfilled `PRATHA-<NAME>-<ID4>`), `public.referrals` ledger (`unique(referred_user_id)` prevents double-credit, self-referral CHECK), RPCs `ensure_referral_code()` + `record_referral(text)` (SECURITY DEFINER, `authenticated`-only, anon revoked). Before this, `referred_by` only sat in `user_metadata` and the punya counter read a never-written localStorage key — rewards never accrued.
+- **Migration 017 (`notifications`)**: `public.notification_log` (dedupe, `unique(user_id,type)`), `pg_net` extension, `referrals_notify_credit` AFTER-INSERT trigger → `net.http_post` to the `notify-send` edge fn. Trigger fn is revoked from all client roles. Vault secrets: `resend_api_key`, `notify_hook_secret`, `notify_function_url`, `supabase_publishable_key`.
+- **`notify-send` edge function** (`supabase/functions/notify-send/`, `verify_jwt: false` — pg_net can't mint JWTs; every path guarded in-code): two caller modes — user JWT (self-only `welcome`, `janma_ready`) or `x-notify-secret` header (`referral_credited`). Sends via Resend API; HTML templates are terracotta-themed. Verified end-to-end via a real referral insert → 200 → email delivered.
+- **Client wiring**: `referral.ts` gained `ensureReferralCode`, `recordStoredReferral`, `getReferralStatsServer`, `sendEngagementEmail`. `AuthContext` runs a once-per-session onboarding effect (ensure code → credit stored referral → welcome email). `Profile` uses the canonical DB code + server stats. `PujaDiscovery` fires `janma_ready` when the chart loads and links the janma card to the referral tab (trigger-moment share CTA).
+- **Resend limit**: `onboarding@resend.dev` (test domain) only delivers to the Resend account owner's inbox. To email all users, verify a domain at resend.com/domains and update `FROM` in `notify-send/index.ts`.
 
 ## Remaining blockers (external)
 

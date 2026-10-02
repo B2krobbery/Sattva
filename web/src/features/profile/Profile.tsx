@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useSearchParams } from 'react-router-dom';
 import { 
@@ -24,7 +24,7 @@ import { getProfile, updateProfile, uploadAvatar, avatarPublicUrl, getDonations,
 import { getBookings, type PujaBooking } from '@/lib/api/puja';
 import { useAuth } from '@/features/auth/AuthContext';
 import { IMAGES } from '@/lib/images';
-import { generateReferralCode, getReferralLink, getReferralShareMessage, getReferralStats } from '@/lib/referral';
+import { ensureReferralCode, generateReferralCode, getReferralLink, getReferralShareMessage, getReferralStats, getReferralStatsServer } from '@/lib/referral';
 import './Profile.css';
 
 export function Profile() {
@@ -118,9 +118,20 @@ export function Profile() {
     }
   };
 
-  const myReferralCode = generateReferralCode(user, displayName);
+  const [serverCode, setServerCode] = useState<string | null>(null);
+  const [serverStats, setServerStats] = useState<{ invitedCount: number; punyaPoints: number; tierName: string } | null>(null);
+  useEffect(() => {
+    let live = true;
+    if (user) {
+      ensureReferralCode(user).then((code) => { if (live && code) setServerCode(code); });
+      getReferralStatsServer(user).then((s) => { if (live) setServerStats(s); });
+    }
+    return () => { live = false; };
+  }, [user]);
+
+  const myReferralCode = serverCode || generateReferralCode(user, displayName);
   const myReferralLink = getReferralLink(myReferralCode);
-  const referralStats = getReferralStats(user);
+  const referralStats = serverStats || getReferralStats(user);
 
   const handleCopyCode = async () => {
     try {

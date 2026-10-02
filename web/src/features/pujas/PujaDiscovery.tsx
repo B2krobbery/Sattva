@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getPujas, type Puja } from '@/lib/api/puja';
 import { getProfile } from '@/lib/api/profile';
 import { getJanmaChart } from '@/lib/api/kundali';
 import { useAuth } from '@/features/auth/AuthContext';
-import { MapPin, ArrowRight, ShieldCheck, Sparkles } from 'lucide-react';
+import { sendEngagementEmail } from '@/lib/referral';
+import { MapPin, ArrowRight, ShieldCheck, Sparkles, Share2 } from 'lucide-react';
 import { IMAGES } from '@/lib/images';
 import { CardSkeleton } from '@/components/ui/LoadingScreen';
 import { PujaDetailModal } from './PujaDetailModal';
@@ -36,6 +37,17 @@ export function PujaDiscovery() {
     enabled: !!user && hasBirthDetails,
     staleTime: 24 * 60 * 60 * 1000,
   });
+
+  // Once the janma chart resolves, fire the deduped "your chart is ready"
+  // engagement email (server ignores repeats via notification_log).
+  useEffect(() => {
+    if (!user || !kundali) return;
+    sendEngagementEmail('janma_ready', {
+      nakshatra: kundali.chart.janmaNakshatra,
+      moonRashi: kundali.chart.moonRashi,
+      suggestedWorship: kundali.chart.suggestedWorship,
+    });
+  }, [user, kundali]);
 
   // Nakshatra lord / deity → search keywords matched against offering
   // name+description+significance. Drives the "For You" janma filter.
@@ -205,6 +217,14 @@ export function PujaDiscovery() {
               {kundali.narration.replace(/\*\*/g, '')}
             </p>
           )}
+          <div className="flex items-center justify-end pt-1">
+            <Link
+              to="/profile?tab=referral"
+              className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-terracotta hover:text-terracotta/80 transition-colors"
+            >
+              <Share2 size={13} /> Gift a devotee +108 Punya — share Pratha
+            </Link>
+          </div>
         </motion.section>
       )}
       {user && !hasBirthDetails && (

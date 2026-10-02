@@ -1,4 +1,5 @@
 import { type User } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabase';
 
 const REFERRAL_STORAGE_KEY = 'pratha_inbound_ref_code';
 const REFERRALS_COUNT_KEY = 'pratha_invited_count';
@@ -92,6 +93,78 @@ export function clearInboundReferral(): void {
  * Returns referral points/stats (Punya points).
  * Each invited devotee earns 108 Punya points (sacred Vedic number).
  */
+/**
+ * Server-backed stats: counts rows in public.referrals where the user is the
+ * referrer. Falls back to the local counter while logged out.
+ */
+export async function getReferralStatsServer(user?: User | null): Promise<{
+  invitedCount: number;
+  punyaPoints: number;
+  tierName: string;
+}> {
+  if (user) {
+    const { count, error } = await supabase
+      .from('referrals')
+      .select('id', { count: 'exact', head: true })
+      .eq('referrer_user_id', user.id);
+    if (!error && count !== null) {
+      return { invitedCount: count, punyaPoints: count * 108, tierName: tierFor(count) };
+    }
+  }
+  return getReferralStats(user);
+}
+
+function tierFor(count: number): string {
+  if (count >= 10) return 'Param Bhakt (Guardian)';
+  if (count >= 5) return 'Dharma Mitra (Companion)';
+  if (count >= 1) return 'Seva Sahay (Helper)';
+  return 'Dharma Pratham (Seeker)';
+}
+
+/**
+ * Ensures the canonical referral_code exists on the user's profile and
+ * returns it (idempotent server-side generation).
+ */
+export async function ensureReferralCode(user?: User | null): Promise<string | null> {
+  if (!user) return null;
+  const { data, error } = await supabase.rpc('ensure_referral_code');
+  if (error) {
+    console.warn('[referral] ensure_referral_code failed:', error.message);
+    return null;
+  }
+  return data as string;
+}
+
+/**
+ * Credits the stored inbound referral code via the record_referral RPC.
+ * Idempotent: unique(referred_user_id) prevents double-credit.
+ */
+export async function recordStoredReferral(): Promise<void> {
+  const code = getStoredInboundReferral();
+  if (!code) return;
+  try {
+    const { error } = await supabase.rpc('record_referral', { p_code: code });
+    if (!error) clearInboundReferral();
+  } catch (e) {
+    console.warn('[referral] record_referral failed:', e);
+  }
+}
+
+/**
+ * Fires a deduped engagement email through the notify-send edge function.
+ * Server ignores repeats via notification_log.
+ */
+export async function sendEngagementEmail(
+  type: 'welcome' | 'janma_ready',
+  extra: Record<string, string> = {}
+): Promise<void> {
+  try {
+    await supabase.functions.invoke('notify-send', { body: { type, ...extra } });
+  } catch (e) {
+    console.warn('[notify] send failed:', type, e);
+  }
+}
+
 export function getReferralStats(user?: User | null): {
   invitedCount: number;
   punyaPoints: number;

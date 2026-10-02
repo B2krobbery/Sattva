@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { type User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
+import { ensureReferralCode, recordStoredReferral, sendEngagementEmail } from '@/lib/referral';
 
 interface AuthContextType {
   user: User | null;
@@ -27,6 +28,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
     return () => listener.subscription.unsubscribe();
   }, []);
+
+  // Post-auth housekeeping, once per user per session:
+  // - ensure their referral code exists on the profile
+  // - credit any stored inbound referral (sign-up attribution)
+  // - send the deduped welcome email
+  const onboardedRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!user || onboardedRef.current === user.id) return;
+    onboardedRef.current = user.id;
+    (async () => {
+      await ensureReferralCode(user);
+      await recordStoredReferral();
+      sendEngagementEmail('welcome');
+    })();
+  }, [user]);
 
   const signOut = async () => {
     await supabase.auth.signOut();
