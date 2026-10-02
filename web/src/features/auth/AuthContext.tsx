@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useRef, useState } from 'r
 import { type User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { ensureReferralCode, recordStoredReferral, sendEngagementEmail } from '@/lib/referral';
+import { registerPushToken } from '@/lib/push';
 
 interface AuthContextType {
   user: User | null;
@@ -41,6 +42,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await ensureReferralCode(user);
       await recordStoredReferral();
       sendEngagementEmail('welcome');
+      registerPushToken(user);
     })();
   }, [user]);
 

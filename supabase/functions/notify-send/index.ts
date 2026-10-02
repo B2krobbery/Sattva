@@ -98,6 +98,66 @@ async function sendResend(key: string, to: string, subject: string, html: string
   return r.json();
 }
 
+// ---------- FCM push (v1 API, service account in vault) ----------
+
+function b64url(bytes: Uint8Array): string {
+  return btoa(String.fromCharCode(...bytes))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+async function fcmAccessToken(): Promise<string | null> {
+  const saJson = await secret('fcm_service_account');
+  if (!saJson) return null;
+  const sa = JSON.parse(saJson);
+
+  const now = Math.floor(Date.now() / 1000);
+  const header = b64url(new TextEncoder().encode(JSON.stringify({ alg: 'RS256', typ: 'JWT' })));
+  const claims = b64url(new TextEncoder().encode(JSON.stringify({
+    iss: sa.client_email,
+    scope: 'https://www.googleapis.com/auth/firebase.messaging',
+    aud: 'https://oauth2.googleapis.com/token',
+    iat: now,
+    exp: now + 3600,
+  })));
+
+  const pem = sa.private_key.replace(/-----[^-]+-----/g, '').replace(/\s/g, '');
+  const keyData = Uint8Array.from(atob(pem), (c) => c.charCodeAt(0));
+  const key = await crypto.subtle.importKey(
+    'pkcs8', keyData, { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['sign']
+  );
+  const sig = await crypto.subtle.sign(
+    'RSASSA-PKCS1-v1_5', key, new TextEncoder().encode(`${header}.${claims}`)
+  );
+  const jwt = `${header}.${claims}.${b64url(new Uint8Array(sig))}`;
+
+  const r = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: `grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=${jwt}`,
+  });
+  if (!r.ok) { console.error('fcm token:', await r.text()); return null; }
+  const { access_token } = await r.json();
+  return access_token;
+}
+
+async function sendPushToUser(userId: string, title: string, body: string): Promise<void> {
+  const accessToken = await fcmAccessToken();
+  if (!accessToken) { console.log('push skipped: no fcm_service_account secret'); return; }
+
+  const { data: tokens } = await admin.from('push_tokens').select('token').eq('user_id', userId);
+  if (!tokens?.length) return;
+
+  await Promise.all(tokens.map(({ token }) =>
+    fetch('https://fcm.googleapis.com/v1/projects/sattva-utsavam-dev/messages:send', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: { token, notification: { title, body } } }),
+    }).then(async (r) => {
+      if (!r.ok) console.error('fcm send:', await r.text());
+    })
+  ));
+}
+
 async function alreadySent(userId: string, type: string) {
   const { data } = await admin.from('notification_log').select('id').eq('user_id', userId).eq('type', type).maybeSingle();
   return !!data;
@@ -151,6 +211,8 @@ Deno.serve(async (req) => {
         tier: tierFor(count ?? 1),
       });
       try { await sendResend(resendKey, to, t.subject, t.html); } catch (e) { return json({ error: `resend: ${e}` }, 502); }
+      await sendPushToUser(ref.referrer_user_id, '+108 Punya earned 🪷',
+        `${referred?.display_name || 'A devotee'} joined Pratha through your invite`);
       await markSent(ref.referrer_user_id, `referral:${ref.id}`, { referred_user_id: ref.referred_user_id });
       return json({ ok: true });
     }
@@ -178,6 +240,12 @@ Deno.serve(async (req) => {
     : TEMPLATES[type]({ name });
 
   try { await sendResend(resendKey, to, t.subject, t.html); } catch (e) { return json({ error: `resend: ${e}` }, 502); }
+  if (type === 'welcome') {
+    await sendPushToUser(uid, 'Namaste 🙏', 'Welcome to Pratha — your sanctuary awaits');
+  } else if (type === 'janma_ready') {
+    await sendPushToUser(uid, 'Your janma chart is ready ✨',
+      `${payload.nakshatra || ''} nakshatra — see your recommended pujas`);
+  }
   await markSent(uid, type);
   return json({ ok: true });
 });
