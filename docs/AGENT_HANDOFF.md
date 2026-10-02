@@ -144,6 +144,7 @@ PostgREST reminder: to-one embeds return objects, not arrays (`row.temples?.name
 - Sign-up integration: `Auth.tsx` pre-fills the referral code field during registration and forwards it to `supabase.auth.signUp({ options: { data: { referred_by: code } } })`.
 - Profile integration: `/profile` gained an **"Invite & Earn"** tab featuring one-click WhatsApp sharing with auspicious invite message, Web Share API (`navigator.share`), clipboard copy buttons with visual feedback, and 108 Punya points merit counter.
 - Home screen prompt: A "Dharma Mitra Referral" banner on `/` directs devotees to `/profile?tab=referral`.
+- Settings form layout fix (2026-10-02): Resolved overlapping inline `<label>` elements in `Profile.tsx` (Edit Profile & Janma Details) by migrating to responsive Tailwind CSS grid layouts (`grid-cols-1 sm:grid-cols-2` and `grid-cols-1 sm:grid-cols-3`) with dedicated `.form-group`, `.form-label`, and `.form-input` definitions in `Profile.css`.
 
 ## Remaining blockers (external)
 
