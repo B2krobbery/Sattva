@@ -7,9 +7,10 @@ import { signInWithGoogle } from '@/lib/auth/oauth';
 const DEMO_EMAIL = 'pratha.demo.client@gmail.com';
 const DEMO_PASSWORD = 'PrathaDemo!2026';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Gift } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { LoadingScreen } from '@/components/ui/LoadingScreen';
+import { getStoredInboundReferral, clearInboundReferral } from '@/lib/referral';
 import './Auth.css';
 
 export function Auth() {
@@ -21,6 +22,7 @@ export function Auth() {
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [loading, setLoading] = useState(false);
+  const [referralCode, setReferralCode] = useState(() => getStoredInboundReferral() || '');
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
@@ -58,9 +60,16 @@ export function Auth() {
         const { data, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
-          options: { data: { display_name: email.split('@')[0] }, emailRedirectTo: window.location.origin },
+          options: {
+            data: {
+              display_name: email.split('@')[0],
+              ...(referralCode.trim() ? { referred_by: referralCode.trim().toUpperCase() } : {})
+            },
+            emailRedirectTo: window.location.origin,
+          },
         });
         if (signUpError) throw signUpError;
+        clearInboundReferral();
         if (!data.session) {
           setNotice('Account created. Check your email to confirm access, then sign in.');
           setIsLogin(true);
@@ -252,6 +261,27 @@ export function Auth() {
               </button>
             )}
           </div>
+
+          {!isLogin && (
+            <div className="form-group">
+              <div className="flex items-center justify-between">
+                <label className="form-label flex items-center gap-1.5">
+                  <Gift size={13} className="text-terracotta" />
+                  <span>Referral Code (Optional)</span>
+                </label>
+                {referralCode && (
+                  <span className="text-[11px] font-semibold text-tulsi">Code Applied</span>
+                )}
+              </div>
+              <input
+                type="text"
+                className="form-input uppercase tracking-wider"
+                placeholder="e.g. PRATHA-RAJESH-108"
+                value={referralCode}
+                onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+              />
+            </div>
+          )}
 
           <button
             type="submit"

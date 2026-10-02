@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from '@/features/auth/AuthContext';
 import { AppShell } from '@/components/layout/AppShell';
 import { BirthDetailsPrompt } from '@/components/auth/BirthDetailsPrompt';
 import { handleAuthDeepLink } from '@/lib/auth/oauth';
+import { captureInboundReferral } from '@/lib/referral';
 
 import { Home } from '@/features/home/Home';
 import { Auth } from '@/features/auth/Auth';
@@ -84,6 +85,9 @@ export default function App() {
   // OAuth deep links (pratha://auth/callback?code=...) arrive via the Capacitor
   // App plugin when Google sign-in returns from the system browser.
   React.useEffect(() => {
+    // Capture any referral code passed via query string (?ref=CODE)
+    captureInboundReferral();
+
     if (!Capacitor.isNativePlatform()) return;
     const listener = CapApp.addListener('appUrlOpen', ({ url }) => {
       void handleAuthDeepLink(url);

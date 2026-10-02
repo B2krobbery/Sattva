@@ -10,7 +10,8 @@ import {
   Sun, 
   ShieldCheck, 
   Clock, 
-  Activity 
+  Activity,
+  Gift 
 } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { getProfile } from '@/lib/api/profile';
@@ -87,6 +88,28 @@ export function Home() {
       </section>
 
       <ProfileNudge />
+
+      <Link 
+        to="/profile?tab=referral"
+        className="glass-card flex items-center justify-between gap-3 p-3.5 rounded-2xl border border-gold/30 bg-surface hover:border-gold/60 transition-colors group"
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-gold/15 text-gold flex items-center justify-center shrink-0">
+            <Gift size={20} />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-text-primary">Dharma Mitra Referral</span>
+              <span className="badge-tulsi text-[10px] py-0 px-1.5">+108 Punya</span>
+            </div>
+            <p className="text-[11px] text-text-muted mt-0.5">Invite family &amp; friends to earn sacred Seva merits</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-1 text-xs font-semibold text-terracotta shrink-0 group-hover:translate-x-0.5 transition-transform">
+          <span>Invite</span>
+          <ArrowRight size={14} />
+        </div>
+      </Link>
 
       {/* Quick Action Navigation Grid */}
       <section className="quick-action-grid">

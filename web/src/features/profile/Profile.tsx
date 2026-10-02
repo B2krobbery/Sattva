@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { 
   LogOut, 
   Plus, 
@@ -12,19 +12,32 @@ import {
   ArrowRight,
   Sun,
   Moon,
-  MonitorSmartphone
+  MonitorSmartphone,
+  Gift,
+  Copy,
+  Check,
+  Share2,
+  Sparkles
 } from 'lucide-react';
 import { useThemeMode, setThemeMode } from '@/lib/theme';
 import { getProfile, updateProfile, uploadAvatar, avatarPublicUrl, getDonations, getFamily, addFamilyMember, type Donation, type FamilyMember } from '@/lib/api/profile';
 import { getBookings, type PujaBooking } from '@/lib/api/puja';
 import { useAuth } from '@/features/auth/AuthContext';
 import { IMAGES } from '@/lib/images';
+import { generateReferralCode, getReferralLink, getReferralShareMessage, getReferralStats } from '@/lib/referral';
 import './Profile.css';
 
 export function Profile() {
   const { user, signOut } = useAuth();
   const themeMode = useThemeMode();
-  const [activeTab, setActiveTab] = useState<'seva' | 'pujas' | 'family' | 'settings'>('seva');
+  const [searchParams] = useSearchParams();
+  const initialTab = (searchParams.get('tab') as 'seva' | 'pujas' | 'family' | 'referral' | 'settings') || 'seva';
+  const [activeTab, setActiveTab] = useState<'seva' | 'pujas' | 'family' | 'referral' | 'settings'>(
+    ['seva', 'pujas', 'family', 'referral', 'settings'].includes(initialTab) ? initialTab : 'seva'
+  );
+  const [copiedCode, setCopiedCode] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
+  const [shareSuccess, setShareSuccess] = useState(false);
   const [showAddFamily, setShowAddFamily] = useState(false);
   const [memberName, setMemberName] = useState('');
   const [memberRelation, setMemberRelation] = useState('Spouse');
@@ -105,6 +118,55 @@ export function Profile() {
     }
   };
 
+  const myReferralCode = generateReferralCode(user, displayName);
+  const myReferralLink = getReferralLink(myReferralCode);
+  const referralStats = getReferralStats(user);
+
+  const handleCopyCode = async () => {
+    try {
+      await navigator.clipboard.writeText(myReferralCode);
+      setCopiedCode(true);
+      setTimeout(() => setCopiedCode(false), 2500);
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(myReferralLink);
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2500);
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleWhatsAppShare = () => {
+    const msg = getReferralShareMessage(myReferralCode, myReferralLink);
+    const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
+    window.open(url, '_blank');
+  };
+
+  const handleNativeShare = async () => {
+    const msg = getReferralShareMessage(myReferralCode, myReferralLink);
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Join Pratha Platform',
+          text: msg,
+          url: myReferralLink,
+        });
+        setShareSuccess(true);
+        setTimeout(() => setShareSuccess(false), 2500);
+      } catch {
+        // ignore
+      }
+    } else {
+      handleCopyLink();
+    }
+  };
+
   return (
     <div className="profile-page">
       {/* Devotee Header Identity Card */}
@@ -167,6 +229,16 @@ export function Profile() {
           onClick={() => setActiveTab('family')}
         >
           Sankalpa Family ({family.length})
+        </button>
+
+        <button 
+          className={`profile-tab-btn ${activeTab === 'referral' ? 'active' : ''}`}
+          onClick={() => setActiveTab('referral')}
+        >
+          <span className="flex items-center gap-1.5">
+            <Gift size={14} className="text-terracotta" />
+            <span>Invite &amp; Earn</span>
+          </span>
         </button>
 
         <button 
@@ -369,6 +441,140 @@ export function Profile() {
               </div>
             ))
           )}
+        </div>
+      )}
+
+      {activeTab === 'referral' && (
+        <div className="profile-content-panel">
+          {/* Main Referral Code & Share Card */}
+          <div className="activity-item-card" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 16 }}>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <div className="badge-gold self-start mb-2 inline-flex items-center gap-1.5 text-xs">
+                  <Sparkles size={12} />
+                  <span>Dharma Mitra Program</span>
+                </div>
+                <h3 className="activity-meta-title text-lg font-serif">Invite Devotees &amp; Earn Punya</h3>
+                <p className="activity-meta-sub">Share your sacred invite code to welcome family and friends to Pratha</p>
+              </div>
+
+              <div className="flex items-center gap-2 self-start sm:self-auto bg-surface-subtle border border-border-subtle px-3 py-1.5 rounded-full">
+                <Gift size={14} className="text-terracotta" />
+                <span className="text-xs font-semibold text-text-primary">+108 Punya / Invite</span>
+              </div>
+            </div>
+
+            {/* Code Box */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-surface-subtle p-4 rounded-xl border border-border-subtle">
+              <div>
+                <span className="text-[11px] font-semibold text-text-muted uppercase tracking-wider block mb-1">
+                  Your Devotee Referral Code
+                </span>
+                <span className="font-mono text-lg font-bold text-terracotta tracking-wider">
+                  {myReferralCode}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleCopyCode}
+                  className="btn-secondary text-xs py-2 px-3 flex items-center gap-1.5"
+                  title="Copy Code"
+                >
+                  {copiedCode ? <Check size={14} className="text-tulsi" /> : <Copy size={14} />}
+                  <span>{copiedCode ? 'Code Copied!' : 'Copy Code'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCopyLink}
+                  className="btn-secondary text-xs py-2 px-3 flex items-center gap-1.5"
+                  title="Copy Link"
+                >
+                  {copiedLink ? <Check size={14} className="text-tulsi" /> : <Copy size={14} />}
+                  <span>{copiedLink ? 'Link Copied!' : 'Copy Link'}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+              <button
+                type="button"
+                onClick={handleWhatsAppShare}
+                className="flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20ba5a] text-white px-4 py-2.5 rounded-full text-xs font-semibold shadow-sm transition-all"
+              >
+                <Share2 size={15} />
+                <span>Share via WhatsApp</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleNativeShare}
+                className="btn-primary text-xs py-2.5 px-4 flex items-center justify-center gap-2"
+              >
+                <Share2 size={15} />
+                <span>{shareSuccess ? 'Shared Successfully!' : 'Share with Friends'}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Devotee Merit & Tier Stats */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="activity-item-card" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 6 }}>
+              <span className="text-xs text-text-muted uppercase font-semibold">Devotees Welcomed</span>
+              <span className="font-serif text-2xl font-bold text-text-primary">
+                {referralStats.invitedCount}
+              </span>
+              <span className="text-[11px] text-tulsi font-medium">Spiritual Companions</span>
+            </div>
+
+            <div className="activity-item-card" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 6 }}>
+              <span className="text-xs text-text-muted uppercase font-semibold">Earned Punya Points</span>
+              <span className="font-serif text-2xl font-bold text-terracotta">
+                {referralStats.punyaPoints}
+              </span>
+              <span className="text-[11px] text-gold font-medium">Seva Merits Accumulated</span>
+            </div>
+
+            <div className="activity-item-card" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 6 }}>
+              <span className="text-xs text-text-muted uppercase font-semibold">Dharma Tier</span>
+              <span className="font-serif text-base font-bold text-text-primary">
+                {referralStats.tierName}
+              </span>
+              <span className="text-[11px] text-text-muted">Unlocks Seva Blessings</span>
+            </div>
+          </div>
+
+          {/* How It Works Card */}
+          <div className="activity-item-card" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 14 }}>
+            <h4 className="activity-meta-title text-sm font-serif">How the Referral Program Works</h4>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-left">
+              <div className="p-3 rounded-lg bg-surface-subtle border border-border-subtle">
+                <span className="w-6 h-6 rounded-full bg-terracotta text-white text-xs font-bold flex items-center justify-center mb-2">1</span>
+                <h5 className="font-semibold text-xs text-text-primary mb-1">Share Your Link or Code</h5>
+                <p className="text-[11px] text-text-muted leading-relaxed">
+                  Send your personalized devotee invite code or link to friends, family, and spiritual circles.
+                </p>
+              </div>
+
+              <div className="p-3 rounded-lg bg-surface-subtle border border-border-subtle">
+                <span className="w-6 h-6 rounded-full bg-terracotta text-white text-xs font-bold flex items-center justify-center mb-2">2</span>
+                <h5 className="font-semibold text-xs text-text-primary mb-1">They Join Pratha</h5>
+                <p className="text-[11px] text-text-muted leading-relaxed">
+                  When they register using your code, they are linked as your spiritual companion.
+                </p>
+              </div>
+
+              <div className="p-3 rounded-lg bg-surface-subtle border border-border-subtle">
+                <span className="w-6 h-6 rounded-full bg-terracotta text-white text-xs font-bold flex items-center justify-center mb-2">3</span>
+                <h5 className="font-semibold text-xs text-text-primary mb-1">Earn Punya &amp; Merits</h5>
+                <p className="text-[11px] text-text-muted leading-relaxed">
+                  Receive 108 Punya points for every devotee who connects with sacred temple ceremonies and Gau Seva.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 

@@ -137,6 +137,14 @@ PostgREST reminder: to-one embeds return objects, not arrays (`row.temples?.name
 - `/profile` is wrapped in `RequireAuth` (redirects to `/login` signed-out) — other routes stay public by design; booking/contribution modals gate per-action.
 - `.action-tile` is shared by `<Link>` and `<button>` (Rishi tile); it needs `text-align: left`/`font: inherit` normalization or the button centers its text.
 
+## Dharma Mitra Referral Program (added 2026-10-02)
+
+- Frontend referral system (`web/src/lib/referral.ts`) generating deterministic devotee codes (`PRATHA-<NAME>-<HASH>`) and shareable links (`/?ref=<CODE>`).
+- URL inbound capture: `captureInboundReferral()` runs in `App.tsx` on initial mount, storing the code in `localStorage['pratha_inbound_ref_code']`.
+- Sign-up integration: `Auth.tsx` pre-fills the referral code field during registration and forwards it to `supabase.auth.signUp({ options: { data: { referred_by: code } } })`.
+- Profile integration: `/profile` gained an **"Invite & Earn"** tab featuring one-click WhatsApp sharing with auspicious invite message, Web Share API (`navigator.share`), clipboard copy buttons with visual feedback, and 108 Punya points merit counter.
+- Home screen prompt: A "Dharma Mitra Referral" banner on `/` directs devotees to `/profile?tab=referral`.
+
 ## Remaining blockers (external)
 
 1. **Razorpay** sandbox key/secret + webhook secret → payment order/webhook Edge Functions + sandbox validation.
