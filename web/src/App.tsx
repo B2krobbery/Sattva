@@ -17,6 +17,7 @@ import { AnimalPassport } from '@/features/gaushala/AnimalPassport';
 import { PujaDiscovery } from '@/features/pujas/PujaDiscovery';
 import { SevaExperience } from '@/features/seva/SevaExperience';
 import { Profile } from '@/features/profile/Profile';
+import { Admin } from '@/features/admin/Admin';
 
 import { LoadingScreen } from '@/components/ui/LoadingScreen';
 import { Discover } from '@/features/discover/Discover';
@@ -70,6 +71,7 @@ export function PrathaAppContent() {
         <Route path="/gaushala/animal/:id" element={<AnimalPassport />} />
         <Route path="/seva" element={<SevaExperience />} />
         <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
+        <Route path="/admin" element={<RequireAuth><Admin /></RequireAuth>} />
       </Route>
 
       {/* Fallback route */}

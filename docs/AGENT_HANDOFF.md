@@ -159,6 +159,14 @@ PostgREST reminder: to-one embeds return objects, not arrays (`row.temples?.name
 - **Resend limit**: `onboarding@resend.dev` (test domain) only delivers to the Resend account owner's inbox. To email all users, verify a domain at resend.com/domains and update `FROM` in `notify-send/index.ts`.
 - **FCM push (2026-10-03)**: Firebase project `sattva-utsavam-dev` (same GCP project as Google OAuth); Android app `1:1080658765469:android:8d5960177b71f50fdbd674` registered for `com.utsavam.sattva`; `google-services.json` in `web/android/app/` (gradle plugin already wired by Capacitor defaults). `@capacitor/push-notifications` installed; `POST_NOTIFICATIONS` in the manifest; `push_tokens` table (migration 018) stores device tokens via `registerPushToken()` in AuthContext. `notify-send` v4 sends FCM v1 pushes using the `fcm_service_account` vault secret — **secret not yet populated**: needs a service-account JSON (Firebase console → Project Settings → Service Accounts → Generate private key). Until then pushes silently skip; emails still send.
 
+## Admin portal (added 2026-10-03)
+
+- `/admin` ("Sanctum Control") — `web/src/features/admin/Admin.tsx` + `web/src/lib/api/admin.ts`. Gated client-side by `getMyAdminRoles()` (user_roles own-row SELECT) and server-side by existing RLS (`is_admin()`, `manages_temple()` already scope every admin-relevant table).
+- The **Admin nav item only renders when `user_roles` is non-empty** for the signed-in user (`AppShell` query `['admin-roles']`, same key used by the page).
+- Tabs: **Overview** (RLS-scoped counts), **Bookings** (list + `complete_booking`/`cancel_puja_booking` RPCs), **Devotees** (profiles), **Roles** (super_admin only — grant/revoke via direct `user_roles` writes allowed by `user_roles_admin` policy).
+- Role enum: `super_admin`, `editor`, `temple_admin`, `gaushala_admin`, `gaushala_staff`, `vet`; scopes `global`/`temple`/`gaushala`. `marvelpokemaster@gmail.com` has `super_admin` global; the demo account has `editor` (kept for demoing the portal — revoke via Roles tab or SQL).
+- Verified: non-admin sees no Admin item and `/admin` redirects `/`; editor sees portal minus Roles tab.
+
 ## Remaining blockers (external)
 
 1. **Razorpay** sandbox key/secret + webhook secret → payment order/webhook Edge Functions + sandbox validation.

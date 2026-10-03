@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { Home, Flame, MapPin, HeartHandshake, User, Sparkles, Compass, LogIn } from 'lucide-react';
+import { Home, Flame, MapPin, HeartHandshake, User, Sparkles, Compass, LogIn, ShieldCheck } from 'lucide-react';
 import { RishiChatModal } from '@/features/ai/RishiChatModal';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { getProfile, avatarPublicUrl } from '@/lib/api/profile';
+import { getMyAdminRoles } from '@/lib/api/admin';
 import { cn } from '@/lib/utils';
 import { motion } from 'motion/react';
 
@@ -20,6 +21,14 @@ export function AppShell() {
     (profileData?.profile?.displayName || user?.user_metadata?.display_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Devotee') as string;
   const avatarUrl = avatarPublicUrl(profileData?.profile?.avatarPath) || (user?.user_metadata?.avatar_url as string | undefined);
 
+  const { data: adminRoles } = useQuery({
+    queryKey: ['admin-roles'],
+    queryFn: getMyAdminRoles,
+    enabled: !!user,
+    staleTime: 60 * 1000,
+  });
+  const isAdmin = (adminRoles?.length ?? 0) > 0;
+
   const navItems = [
     { name: 'Home', path: '/', icon: Home },
     { name: 'Discover', path: '/discover', icon: Compass },
@@ -27,6 +36,7 @@ export function AppShell() {
     { name: 'Gaushala', path: '/gaushala', icon: MapPin },
     { name: 'Seva', path: '/seva', icon: HeartHandshake },
     { name: 'Profile', path: '/profile', icon: User },
+    ...(isAdmin ? [{ name: 'Admin', path: '/admin', icon: ShieldCheck }] : []),
   ];
 
   return (
