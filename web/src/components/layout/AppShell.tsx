@@ -20,7 +20,7 @@ export function AppShell() {
   });
   const displayName =
     (profileData?.profile?.displayName || user?.user_metadata?.display_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Devotee') as string;
-  const avatarUrl = avatarPublicUrl(profileData?.profile?.avatarPath) || (user?.user_metadata?.avatar_url as string | undefined);
+  const avatarUrl = avatarPublicUrl(profileData?.profile?.avatarPath);
 
   const { data: adminRoles } = useQuery({
     queryKey: ['admin-roles'],

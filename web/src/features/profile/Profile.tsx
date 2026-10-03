@@ -184,7 +184,7 @@ export function Profile() {
       <section className="devotee-profile-card">
         <div className="devotee-avatar-box">
           <img
-            src={avatarPreview || avatarPublicUrl(profile?.avatarPath) || user?.user_metadata?.avatar_url || IMAGES.profile.defaultAvatar}
+            src={avatarPreview || avatarPublicUrl(profile?.avatarPath) || IMAGES.profile.defaultAvatar}
             alt={displayName}
           />
         </div>
@@ -619,7 +619,7 @@ export function Profile() {
             </div>
             <label className="flex items-center gap-3 cursor-pointer">
               <img
-                src={avatarPreview || avatarPublicUrl(profile?.avatarPath) || user?.user_metadata?.avatar_url || IMAGES.profile.defaultAvatar}
+                src={avatarPreview || avatarPublicUrl(profile?.avatarPath) || IMAGES.profile.defaultAvatar}
                 alt="Profile photo"
                 className="w-14 h-14 rounded-full object-cover border border-border-subtle"
               />

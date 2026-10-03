@@ -178,6 +178,8 @@ PostgREST reminder: to-one embeds return objects, not arrays (`row.temples?.name
 - Note: outbox SELECT uses `is_admin()` — non-super roles see empty queue.
 - **Scheduled** (migration 019): `pg_cron` jobs `engagement-plan` (03:30 UTC / 09:00 IST) and `engagement-send` (03:38 UTC) call the fn via `pg_net` with the vault hook secret. `select * from cron.job_run_details` for run history.
 
+- Avatars now show **only** uploaded `profiles.avatar_path`; Google `user_metadata.avatar_url` no longer renders as the user's pfp (it made the profile look complete at first login while ProfileNudge correctly counted only the seeded name).
+
 ## Remaining blockers (external)
 
 1. **Razorpay** sandbox key/secret + webhook secret → payment order/webhook Edge Functions + sandbox validation.
