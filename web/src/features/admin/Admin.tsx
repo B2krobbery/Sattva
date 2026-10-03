@@ -5,18 +5,21 @@ import { useAuth } from '@/features/auth/AuthContext';
 import {
   getMyAdminRoles, getAdminStats, getAdminBookings, completeBooking, cancelBooking,
   getAdminProfiles, getAllRoles, grantRole, revokeRole, getOutbox, runOrchestrator,
+  getBusinessStats,
   type AdminBooking,
 } from '@/lib/api/admin';
+import { CmsPanel } from '@/features/cms/CmsPanel';
 import { motion } from 'motion/react';
 import {
   ShieldCheck, LayoutDashboard, CalendarCheck, Users, KeyRound,
-  CheckCircle2, XCircle, Loader2, Megaphone, Sparkles, SendHorizonal,
+  CheckCircle2, XCircle, Loader2, Megaphone, Sparkles, SendHorizonal, PencilLine,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const TABS = [
   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
   { id: 'bookings', label: 'Bookings', icon: CalendarCheck },
+  { id: 'content', label: 'Content', icon: PencilLine },
   { id: 'devotees', label: 'Devotees', icon: Users },
   { id: 'engagement', label: 'Engagement', icon: Megaphone },
   { id: 'roles', label: 'Roles', icon: KeyRound },
@@ -79,6 +82,11 @@ export function Admin() {
   const { data: outbox } = useQuery({
     queryKey: ['admin-outbox'],
     queryFn: getOutbox,
+    enabled: isAdmin,
+  });
+  const { data: biz } = useQuery({
+    queryKey: ['admin-biz'],
+    queryFn: getBusinessStats,
     enabled: isAdmin,
   });
   const [orchMsg, setOrchMsg] = useState<string | null>(null);
@@ -152,15 +160,37 @@ export function Admin() {
       </motion.section>
 
       {activeTab === 'overview' && (
-        <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {Object.entries(STAT_LABELS).map(([key, label]) => (
-            <div key={key} className="glass-card p-4 rounded-2xl border border-border-subtle bg-surface">
-              <div className="text-2xl font-bold text-text-primary">{stats?.[key] ?? '—'}</div>
-              <div className="text-xs text-text-muted mt-0.5">{label}</div>
+        <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="glass-card p-4 rounded-2xl border border-gold/30 bg-gold/5">
+              <div className="text-2xl font-bold text-text-primary">₹{(biz?.sevaRupees ?? 0).toLocaleString('en-IN')}</div>
+              <div className="text-xs text-text-muted mt-0.5">Seva collected</div>
             </div>
-          ))}
+            <div className="glass-card p-4 rounded-2xl border border-border-subtle bg-surface">
+              <div className="text-2xl font-bold text-amber-600">{biz?.pendingBookings ?? '—'}</div>
+              <div className="text-xs text-text-muted mt-0.5">Pending bookings</div>
+            </div>
+            <div className="glass-card p-4 rounded-2xl border border-border-subtle bg-surface">
+              <div className="text-2xl font-bold text-blue-600">{biz?.confirmedBookings ?? '—'}</div>
+              <div className="text-xs text-text-muted mt-0.5">Confirmed bookings</div>
+            </div>
+            <div className="glass-card p-4 rounded-2xl border border-border-subtle bg-surface">
+              <div className="text-2xl font-bold text-text-primary">{(biz?.punyaIssued ?? 0).toLocaleString()}</div>
+              <div className="text-xs text-text-muted mt-0.5">Punya issued</div>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {Object.entries(STAT_LABELS).map(([key, label]) => (
+              <div key={key} className="glass-card p-4 rounded-2xl border border-border-subtle bg-surface">
+                <div className="text-2xl font-bold text-text-primary">{stats?.[key] ?? '—'}</div>
+                <div className="text-xs text-text-muted mt-0.5">{label}</div>
+              </div>
+            ))}
+          </div>
         </motion.section>
       )}
+
+      {activeTab === 'content' && <CmsPanel />}
 
       {activeTab === 'bookings' && (
         <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col gap-2.5">

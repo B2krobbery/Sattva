@@ -167,6 +167,15 @@ PostgREST reminder: to-one embeds return objects, not arrays (`row.temples?.name
 - Role enum: `super_admin`, `editor`, `temple_admin`, `gaushala_admin`, `gaushala_staff`, `vet`; scopes `global`/`temple`/`gaushala`. `marvelpokemaster@gmail.com` has `super_admin` global; the demo account has `editor` (kept for demoing the portal — revoke via Roles tab or SQL).
 - Verified: non-admin sees no Admin item and `/admin` redirects `/`; editor sees portal minus Roles tab.
 
+## Content CMS — Sanctum Control → Content (added 2026-10-03)
+
+- WordPress-style CMS at `/admin` → Content. `web/src/features/cms/` + `web/src/lib/api/cms.ts`. Registry-driven: `entities.ts` declares each entity's fields/relations/defaults; `CmsPanel.tsx` renders section rail + list + editor drawer; `fields.tsx` is the input library (text/money/enum/date/datetime/relation/image/days-chips/json/uuid).
+- 9 entities: Pujas, Cows, Temples, Events, Festivals, Darshan Streams, Seva Campaigns, Welfare Updates, Editorial. Draft → Publish workflow (status enum); Archive is a soft delete.
+- **Gotcha**: `name`/`title` columns are GENERATED from `*_i18n` — writes must go to `name_i18n`/`title_i18n` only (buildPayload `continue`s past generated keys when `i18n` is set).
+- Per-entity `defaults` fill NOT-NULL non-form columns (currency INR, activities_i18n {}, sponsorship_raised, published_at). `__now__` resolves to current timestamp.
+- Images upload to `public-media/cms/{entity}/…` (admin write policy exists). Relation pickers are RLS-scoped (scoped admins only see their own entities).
+- Overview tab now shows business metrics (seva ₹ collected, pending/confirmed bookings, Punya issued). Migration 020 adds `audit_log` admin SELECT.
+
 ## AI engagement orchestration (added 2026-10-03)
 
 - **`engagement-orchestrator` edge fn** (`supabase/functions/engagement-orchestrator/`, deployed v4, `verify_jwt:false`). Auth: super_admin JWT or `x-notify-secret`. Modes:

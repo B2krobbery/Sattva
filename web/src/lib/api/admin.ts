@@ -169,3 +169,19 @@ export async function runOrchestrator(action: 'plan' | 'send'): Promise<{ planne
   if (error) throw error;
   return data;
 }
+
+/** Business-level metrics for the Overview tab. */
+export async function getBusinessStats(): Promise<{ sevaRupees: number; pendingBookings: number; confirmedBookings: number; punyaIssued: number }> {
+  const [{ data: contrib }, { count: pending }, { count: confirmed }, { count: refCount }] = await Promise.all([
+    supabase.from('seva_contributions').select('amount').eq('status', 'paid'),
+    supabase.from('puja_bookings').select('id', { count: 'exact', head: true }).eq('status', 'pending_payment'),
+    supabase.from('puja_bookings').select('id', { count: 'exact', head: true }).eq('status', 'confirmed'),
+    supabase.from('referrals').select('id', { count: 'exact', head: true }),
+  ]);
+  return {
+    sevaRupees: (contrib || []).reduce((s, c) => s + Number(c.amount || 0), 0) / 100,
+    pendingBookings: pending ?? 0,
+    confirmedBookings: confirmed ?? 0,
+    punyaIssued: (refCount ?? 0) * 108,
+  };
+}
