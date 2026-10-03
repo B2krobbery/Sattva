@@ -176,6 +176,7 @@ PostgREST reminder: to-one embeds return objects, not arrays (`row.temples?.name
 - **`NotificationBell`** (`web/src/components/NotificationBell.tsx`): unread badge + dropdown over `public.notifications`; tap marks read + navigates `data.cta`. Mobile header + desktop sidebar (`openUp` prop — dropdown must open upward at bottom edge).
 - Vault `gemini_api_key` updated to the 2.5-flash key (rishi-ask/kundali-ask share it).
 - Note: outbox SELECT uses `is_admin()` — non-super roles see empty queue.
+- **Scheduled** (migration 019): `pg_cron` jobs `engagement-plan` (03:30 UTC / 09:00 IST) and `engagement-send` (03:38 UTC) call the fn via `pg_net` with the vault hook secret. `select * from cron.job_run_details` for run history.
 
 ## Remaining blockers (external)
 
