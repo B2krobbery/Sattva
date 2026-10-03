@@ -171,6 +171,8 @@ PostgREST reminder: to-one embeds return objects, not arrays (`row.temples?.name
 
 - WordPress-style CMS at `/admin` → Content. `web/src/features/cms/` + `web/src/lib/api/cms.ts`. Registry-driven: `entities.ts` declares each entity's fields/relations/defaults; `CmsPanel.tsx` renders section rail + list + editor drawer; `fields.tsx` is the input library (text/money/enum/date/datetime/relation/image/days-chips/json/uuid).
 - 9 entities: Pujas, Cows, Temples, Events, Festivals, Darshan Streams, Seva Campaigns, Welfare Updates, Editorial. Draft → Publish workflow (status enum); Archive is a soft delete.
+- List select columns are per-entity (only SLUG_TABLES get `slug` — `animals`/`welfare_updates`/`editorial_blocks` lack the column; querying it breaks the whole list).
+- **Demo accounts**: admin demo = `pratha.demo.client@gmail.com` (Explore Demo button, `editor` role). Non-admin demo = `pratha.demo.devotee@gmail.com` / `DemoDevotee#2026` (email-confirmed via SQL; sees no Admin nav, `/admin` bounces home).
 - **Gotcha**: `name`/`title` columns are GENERATED from `*_i18n` — writes must go to `name_i18n`/`title_i18n` only (buildPayload `continue`s past generated keys when `i18n` is set).
 - Per-entity `defaults` fill NOT-NULL non-form columns (currency INR, activities_i18n {}, sponsorship_raised, published_at). `__now__` resolves to current timestamp.
 - Images upload to `public-media/cms/{entity}/…` (admin write policy exists). Relation pickers are RLS-scoped (scoped admins only see their own entities).

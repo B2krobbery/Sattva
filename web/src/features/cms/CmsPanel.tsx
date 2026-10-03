@@ -55,9 +55,9 @@ export function CmsPanel() {
 
   const entity = ENTITIES.find((e) => e.id === entityId)!;
 
-  const { data: rows, isLoading } = useQuery({
+  const { data: rows, isLoading, error: listError } = useQuery({
     queryKey: ['cms', entity.table],
-    queryFn: () => listRows(entity.table, 'id,slug,' + entity.titleKey + ',status,updated_at,created_at' + (entity.table === 'animals' ? ',is_public' : '')),
+    queryFn: () => listRows(entity.table, 'id,' + (SLUG_TABLES.has(entity.table) ? 'slug,' : '') + entity.titleKey + ',status,updated_at,created_at' + (entity.table === 'animals' ? ',is_public' : '')),
   });
 
   const filtered = (rows || []).filter((r) =>
@@ -145,6 +145,7 @@ export function CmsPanel() {
 
       {/* List */}
       {isLoading && <div className="flex justify-center py-10 text-text-muted"><Loader2 className="animate-spin" /></div>}
+      {listError && <div className="text-xs text-red-500 bg-red-500/10 rounded-lg px-3 py-2">{(listError as Error).message}</div>}
       {!isLoading && filtered.length === 0 && (
         <p className="text-sm text-text-muted py-8 text-center">No {entity.label.toLowerCase()} yet — create the first one.</p>
       )}
