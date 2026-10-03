@@ -132,3 +132,40 @@ export async function revokeRole(roleRowId: string): Promise<void> {
   const { error } = await supabase.from('user_roles').delete().eq('id', roleRowId);
   if (error) throw error;
 }
+
+// ---------- engagement orchestration ----------
+
+export interface OutboxRow {
+  id: string;
+  template: string;
+  status: string;
+  title: string;
+  devoteeName: string;
+  createdAt: string;
+  lastError: string | null;
+}
+
+export async function getOutbox(): Promise<OutboxRow[]> {
+  const { data, error } = await supabase
+    .from('notification_outbox')
+    .select('id, template, status, last_error, created_at, payload, devotee:profiles(display_name)')
+    .order('created_at', { ascending: false })
+    .limit(50);
+  if (error) throw error;
+  return (data || []).map((r) => {
+    const payload = r.payload as { title?: unknown };
+    const title = typeof payload?.title === 'string' ? payload.title
+      : (payload?.title as Record<string, string>)?.en || r.template;
+    return {
+      id: r.id, template: r.template, status: r.status,
+      title, devoteeName: (r.devotee as { display_name?: string } | null)?.display_name || '—',
+      createdAt: r.created_at, lastError: r.last_error,
+    };
+  });
+}
+
+export async function runOrchestrator(action: 'plan' | 'send'): Promise<{ planned?: number; sent?: number; failed?: number; candidates?: number }> {
+  const { data, error } = await supabase.functions.invoke('engagement-orchestrator', { body: { action } });
+  if (error) throw error;
+  return data;
+}

@@ -4,13 +4,13 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/features/auth/AuthContext';
 import {
   getMyAdminRoles, getAdminStats, getAdminBookings, completeBooking, cancelBooking,
-  getAdminProfiles, getAllRoles, grantRole, revokeRole,
+  getAdminProfiles, getAllRoles, grantRole, revokeRole, getOutbox, runOrchestrator,
   type AdminBooking,
 } from '@/lib/api/admin';
 import { motion } from 'motion/react';
 import {
   ShieldCheck, LayoutDashboard, CalendarCheck, Users, KeyRound,
-  CheckCircle2, XCircle, Loader2,
+  CheckCircle2, XCircle, Loader2, Megaphone, Sparkles, SendHorizonal,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -18,6 +18,7 @@ const TABS = [
   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
   { id: 'bookings', label: 'Bookings', icon: CalendarCheck },
   { id: 'devotees', label: 'Devotees', icon: Users },
+  { id: 'engagement', label: 'Engagement', icon: Megaphone },
   { id: 'roles', label: 'Roles', icon: KeyRound },
 ] as const;
 
@@ -75,6 +76,12 @@ export function Admin() {
     queryFn: getAllRoles,
     enabled: isSuperAdmin,
   });
+  const { data: outbox } = useQuery({
+    queryKey: ['admin-outbox'],
+    queryFn: getOutbox,
+    enabled: isAdmin,
+  });
+  const [orchMsg, setOrchMsg] = useState<string | null>(null);
 
   if (!loading && !user) return <Navigate to="/login" replace />;
   if (rolesLoading || loading) {
@@ -207,6 +214,72 @@ export function Admin() {
               <span className="text-[10px] font-mono text-text-muted shrink-0">{d.referralCode || ''}</span>
             </div>
           ))}
+        </motion.section>
+      )}
+
+      {activeTab === 'engagement' && (
+        <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col gap-4">
+          <div className="glass-card p-4 rounded-2xl border border-border-subtle bg-surface">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <div className="text-sm font-semibold text-text-primary">AI Engagement Orchestrator</div>
+                <p className="text-xs text-text-muted mt-0.5">
+                  Gemini picks each devotee's next best action (profile completion, first booking, referral nudge, re-engagement) and drafts the message. One action per devotee per day.
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={async () => {
+                    setActionBusy('plan');
+                    try {
+                      const r = await runOrchestrator('plan');
+                      setOrchMsg(`Planned ${r.planned ?? 0} actions across ${r.candidates ?? 0} candidates`);
+                      queryClient.invalidateQueries({ queryKey: ['admin-outbox'] });
+                    } catch { setOrchMsg('Orchestrator call failed — are you super_admin?'); }
+                    finally { setActionBusy(null); }
+                  }}
+                  disabled={actionBusy === 'plan'}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-terracotta text-white text-sm font-semibold hover:bg-terracotta-hover disabled:opacity-50"
+                >
+                  <Sparkles size={14} /> {actionBusy === 'plan' ? 'Thinking…' : 'Plan Actions'}
+                </button>
+                <button
+                  onClick={async () => {
+                    setActionBusy('send');
+                    try {
+                      const r = await runOrchestrator('send');
+                      setOrchMsg(`Sent ${r.sent ?? 0}, failed ${r.failed ?? 0}`);
+                      queryClient.invalidateQueries({ queryKey: ['admin-outbox'] });
+                    } catch { setOrchMsg('Send failed'); }
+                    finally { setActionBusy(null); }
+                  }}
+                  disabled={actionBusy === 'send'}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-gold/20 text-gold text-sm font-semibold hover:bg-gold/30 disabled:opacity-50"
+                >
+                  <SendHorizonal size={14} /> {actionBusy === 'send' ? 'Sending…' : 'Dispatch Queue'}
+                </button>
+              </div>
+            </div>
+            {orchMsg && <div className="mt-3 text-xs font-medium text-tulsi">{orchMsg}</div>}
+          </div>
+
+          <div className="text-[11px] font-bold uppercase tracking-widest text-text-muted">Outbox ({outbox?.length ?? 0})</div>
+          {(outbox ?? []).map((o) => (
+            <div key={o.id} className="glass-card flex items-center justify-between gap-3 p-4 rounded-2xl border border-border-subtle bg-surface">
+              <div className="min-w-0">
+                <div className="text-sm font-semibold text-text-primary truncate">{o.title}</div>
+                <div className="text-xs text-text-muted mt-0.5">
+                  → {o.devoteeName} · {o.template}
+                  {o.lastError && <span className="text-red-500"> · {o.lastError.slice(0, 60)}</span>}
+                </div>
+              </div>
+              <span className={cn('text-[11px] font-semibold px-2.5 py-1 rounded-full shrink-0',
+                o.status === 'sent' ? 'bg-tulsi/15 text-tulsi' : 'bg-amber-500/15 text-amber-600')}>
+                {o.status}
+              </span>
+            </div>
+          ))}
+          {(outbox ?? []).length === 0 && <p className="text-sm text-text-muted py-6 text-center">Queue is empty — run the planner.</p>}
         </motion.section>
       )}
 

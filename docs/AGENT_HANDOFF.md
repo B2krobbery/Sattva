@@ -167,6 +167,16 @@ PostgREST reminder: to-one embeds return objects, not arrays (`row.temples?.name
 - Role enum: `super_admin`, `editor`, `temple_admin`, `gaushala_admin`, `gaushala_staff`, `vet`; scopes `global`/`temple`/`gaushala`. `marvelpokemaster@gmail.com` has `super_admin` global; the demo account has `editor` (kept for demoing the portal — revoke via Roles tab or SQL).
 - Verified: non-admin sees no Admin item and `/admin` redirects `/`; editor sees portal minus Roles tab.
 
+## AI engagement orchestration (added 2026-10-03)
+
+- **`engagement-orchestrator` edge fn** (`supabase/functions/engagement-orchestrator/`, deployed v4, `verify_jwt:false`). Auth: super_admin JWT or `x-notify-secret`. Modes:
+  - `plan` — gathers per-user signals (missing `birth_date`, no bookings, referral count, idle days; skips users contacted today) → one `gemini-2.5-flash` call picks each devotee's best next action + drafts title/body/CTA → `notification_outbox` rows (channel `email`, status `pending`). Actions are **index-mapped** to the candidate list — Gemini must not echo userIds (it mutates UUIDs).
+  - `send` — drains pending rows: in-app `notifications` row (always) + Resend email + FCM push to `push_tokens`. Retries cap at 3 attempts.
+- **Admin → Engagement tab**: Plan Actions / Dispatch Queue buttons (JWT-gated super_admin) + outbox viewer (`web/src/lib/api/admin.ts` → `runOrchestrator`, `getOutbox`).
+- **`NotificationBell`** (`web/src/components/NotificationBell.tsx`): unread badge + dropdown over `public.notifications`; tap marks read + navigates `data.cta`. Mobile header + desktop sidebar (`openUp` prop — dropdown must open upward at bottom edge).
+- Vault `gemini_api_key` updated to the 2.5-flash key (rishi-ask/kundali-ask share it).
+- Note: outbox SELECT uses `is_admin()` — non-super roles see empty queue.
+
 ## Remaining blockers (external)
 
 1. **Razorpay** sandbox key/secret + webhook secret → payment order/webhook Edge Functions + sandbox validation.

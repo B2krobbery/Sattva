@@ -6,6 +6,7 @@ import { useAuth } from '@/features/auth/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { getProfile, avatarPublicUrl } from '@/lib/api/profile';
 import { getMyAdminRoles } from '@/lib/api/admin';
+import { NotificationBell } from '@/components/NotificationBell';
 import { cn } from '@/lib/utils';
 import { motion } from 'motion/react';
 
@@ -49,6 +50,7 @@ export function AppShell() {
         </NavLink>
 
         <div className="flex items-center gap-2">
+          <NotificationBell />
           <motion.button
             whileTap={{ scale: 0.95 }}
             className="flex items-center gap-1.5 bg-surface-subtle text-text-primary px-3 py-1.5 rounded-md text-xs font-medium"
@@ -142,6 +144,7 @@ export function AppShell() {
               <span className="w-2 h-2 rounded-full bg-tulsi animate-pulse" />
               Vrindavan Sanctum
             </div>
+            <NotificationBell openUp />
           </div>
           <motion.button 
             
