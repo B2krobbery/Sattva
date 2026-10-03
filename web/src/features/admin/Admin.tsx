@@ -92,7 +92,8 @@ export function Admin() {
   const [orchMsg, setOrchMsg] = useState<string | null>(null);
 
   if (!loading && !user) return <Navigate to="/login" replace />;
-  if (rolesLoading || loading) {
+  const rolesPending = rolesLoading || (!!user && roles === undefined);
+  if (rolesPending || loading) {
     return <div className="flex justify-center py-20 text-text-muted"><Loader2 className="animate-spin" /></div>;
   }
   if (!isAdmin) return <Navigate to="/" replace />;

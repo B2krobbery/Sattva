@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { signInWithGoogle } from '@/lib/auth/oauth';
 
-// Demo account for client evaluation. RLS-scoped like any user — no
-// privileged access. Rotate after client testing.
-const DEMO_EMAIL = 'pratha.demo.client@gmail.com';
-const DEMO_PASSWORD = 'PrathaDemo!2026';
+// Demo accounts for client evaluation. RLS-scoped like any user — no
+// privileged access. Rotate after client testing. Remove pre-production.
+const DEMO_ADMIN = { email: 'pratha.demo.client@gmail.com', password: 'PrathaDemo!2026' };
+const DEMO_DEVOTEE = { email: 'pratha.demo.devotee@gmail.com', password: 'DemoDevotee#2026' };
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Gift } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
@@ -28,7 +28,9 @@ export function Auth() {
 
   useEffect(() => {
     if (user && view !== 'recovery') {
-      navigate('/', { replace: true });
+      const target = sessionStorage.getItem('postLoginRedirect') || '/';
+      sessionStorage.removeItem('postLoginRedirect');
+      navigate(target, { replace: true });
     }
   }, [user, navigate, view]);
 
@@ -301,10 +303,28 @@ export function Auth() {
               setNotice('');
               setLoading(true);
               try {
-                const { error: demoError } = await supabase.auth.signInWithPassword({
-                  email: DEMO_EMAIL,
-                  password: DEMO_PASSWORD,
-                });
+                const { error: demoError } = await supabase.auth.signInWithPassword(DEMO_ADMIN);
+                if (demoError) throw demoError;
+                sessionStorage.setItem('postLoginRedirect', '/admin');
+              } catch (err) {
+                setError(err instanceof Error ? err.message : 'Demo sign-in failed. Please try again.');
+                setLoading(false);
+              }
+            }}
+          >
+            <span>{loading ? 'Signing in...' : 'Explore Admin Console'}</span>
+          </button>
+
+          <button
+            type="button"
+            className="btn-secondary auth-submit-btn"
+            disabled={loading}
+            onClick={async () => {
+              setError('');
+              setNotice('');
+              setLoading(true);
+              try {
+                const { error: demoError } = await supabase.auth.signInWithPassword(DEMO_DEVOTEE);
                 if (demoError) throw demoError;
                 navigate('/');
               } catch (err) {
