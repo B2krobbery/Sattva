@@ -19,6 +19,12 @@ export async function listRows(table: string, select: string, order = 'created_a
   return (data || []) as Row[];
 }
 
+export async function getRow(table: string, id: string, select: string): Promise<Row> {
+  const { data, error } = await db.from(table).select(select).eq('id', id).single();
+  if (error) throw error;
+  return data as Row;
+}
+
 export async function insertRow(table: string, payload: Row): Promise<Row> {
   const { data, error } = await db.from(table).insert(payload).select().single();
   if (error) throw error;

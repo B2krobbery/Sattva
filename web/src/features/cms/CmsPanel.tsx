@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Plus, Pencil, Archive, Loader2, X, SendHorizonal } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { listRows, insertRow, updateRow, archiveRow, slugify, type Row } from '@/lib/api/cms';
+import { listRows, getRow, insertRow, updateRow, archiveRow, slugify, type Row } from '@/lib/api/cms';
 import { ENTITIES, type EntityConfig } from './entities';
 import { CmsField, fieldLabel, type FormState } from './fields';
 import { cn } from '@/lib/utils';
@@ -64,7 +64,7 @@ export function CmsPanel() {
     !search || rowTitle(r, entity).toLowerCase().includes(search.toLowerCase())
   );
 
-  const openEditor = (row: Row | null) => {
+  const openEditor = async (row: Row | null) => {
     setError(null);
     if (!row) {
       const defaults: FormState = {};
@@ -72,17 +72,30 @@ export function CmsPanel() {
       setForm(defaults);
       setEditing('new');
     } else {
+      // The list only selects a few columns — fetch the full row or edits
+      // would blank fields the list never fetched (and overwrite i18n).
+      // i18n fields live ONLY in *_i18n (except generated name/title) — select
+      // the jsonb column, not the virtual key.
+      const cols = [...new Set(entity.fields.flatMap((f) =>
+        f.i18n ? [f.i18n] : [f.key]
+      ))];
+      let full: Row;
+      try {
+        full = await getRow(entity.table, row.id as string, 'id,' + [entity.titleKey, ...cols].join(','));
+      } catch (e) {
+        setError((e as { message?: string })?.message || 'Could not load the record');
+        return;
+      }
       const state: FormState = {};
       entity.fields.forEach((f) => {
-        let v = row[f.key];
-        if (f.i18n && v == null) v = null; // prefer plain column; fallback below
-        if (v == null && f.i18n) v = (row[f.i18n] as Record<string, string>)?.en ?? null;
+        let v = f.i18n ? (full[f.i18n] as Record<string, string>)?.en ?? null : full[f.key];
         if (f.key === 'suggested_amounts' && Array.isArray(v)) v = (v as number[]).map((n) => n / 100).join(', ');
         if (f.type === 'datetime' && v) v = String(v).slice(0, 16);
+        if (f.type === 'date' && v) v = String(v).slice(0, 10);
         state[f.key] = v ?? f.default ?? null;
       });
       setForm(state);
-      setEditing(row);
+      setEditing(full);
     }
   };
 
@@ -163,7 +176,7 @@ export function CmsPanel() {
               <button onClick={() => openEditor(row)} className="p-2 rounded-lg hover:bg-surface-subtle text-text-secondary" aria-label={`Edit ${rowTitle(row, entity)}`}>
                 <Pencil size={14} />
               </button>
-              {row.status !== 'archived' && entity.hasStatus && (
+              {usesDraftStatus && row.status !== 'archived' && (
                 <button onClick={() => archive(row)} className="p-2 rounded-lg hover:bg-red-500/10 text-red-400" aria-label="Archive">
                   <Archive size={14} />
                 </button>
