@@ -20,28 +20,27 @@ Status: ✅ fixed-in-session · ⏳ open
 
 ## ⏳ Open issues for the junior's coding agent
 
-### I1 🔴 BLOCKER — engagement emails 502 for all real users
-- **Symptom**: every `notify-send` call for non-`marvelpokemaster@gmail.com` addresses returns `502 {"error":"resend: Error: You can only send testing emails to your own email address…"}` — welcome, janma_ready, referral_credited all silently fail for real users.
-- **Repro**: sign in as `pratha.demo.devotee@gmail.com` → devtools Network → 502 on `functions/v1/notify-send`.
-- **Fix**: verify a domain at resend.com/domains (needs DNS access), then change `FROM` in `supabase/functions/notify-send/index.ts` (currently `namaste@resend.dev`) and redeploy. Optional hardening: swallow the error client-side and/or route sends through `notification_outbox` with retry instead of direct send so a Resend failure isn't a hard 502.
+### I1 🟠 PARTIALLY FIXED — emails 502 for real users (domain verification still needed)
+- **Status change**: `notify-send` now writes an **in-app `notifications` row and an FCM push BEFORE attempting email**, then returns `200 {ok:true, email_error:…}` instead of a hard 502. Users are notified in-app/on-device regardless; the email leg still fails until a verified Resend domain replaces `namaste@resend.dev` (needs DNS access — not codeable).
+- **Remaining fix**: verify a domain at resend.com/domains (needs DNS access), then change `FROM` in `supabase/functions/notify-send/index.ts` and redeploy.
 
-### I2 🟡 `ensure_referral_code` occasionally 401s right after sign-in
+### I2 ✅ FIXED — `ensure_referral_code` retries once after `getSession()` when the first post-login call 401s
 - **Symptom**: one `401` on `rest/v1/rpc/ensure_referral_code` in the onboarding effect (`AuthContext.tsx:38-47`).
 - **Why**: RPC fires the moment `onAuthStateChange` sets `user`, before the REST client reliably attaches the session token. Harmless (idempotent, code already exists) but ugly.
 - **Fix**: in `ensureReferralCode`, retry once after `getSession()` if error code is 401, or await `supabase.auth.getSession()` before the rpc.
 
-### I3 🔵 Duplicate breed filter chips on /gaushala
+### I3 ✅ FIXED — breed chips are now dynamic + deduped from actual animal data (`[...new Set(breeds)]`); was misdiagnosed as dup chips (those were card badges) but the real defect was hardcoded Sahiwal/Gir-only filters — every breed now filters
 - **Symptom**: "VECHUR" appears twice in the filter rail (two Vechur animals → options built per-animal, not deduped).
 - **Fix**: dedupe the chip list in the GaushalaDiscovery filter builder (Set by breed value).
 
-### I4 🔵 Animal cards aren't anchors
+### I4 ✅ FIXED — info button is now a real `<Link>`; card onClick retained for touch
 - **Symptom**: `/gaushala` cards use onClick nav — no middle-click/new-tab, worse a11y + shareability.
 - **Fix**: wrap card in `<Link to={/gaushala/animal/${id}}>`.
 
-### I5 🟡 Non-admin demo signup requires manual SQL email-confirm
+### I5 🟡 Non-admin demo signup requires manual SQL email-confirm (documented, by-design for prod)
 - **Symptom**: `pratha.demo.devotee` needed `update auth.users set email_confirmed_at` — new signups can't log in until confirmed (fine, intended), but demo onboarding docs should note it or turn confirm-email off for demo env.
 
-### I6 🔵 Editorial Blocks CMS = raw JSON textarea
+### I6 🔵 Editorial Blocks CMS = raw JSON textarea (accepted — advanced feature)
 - `payload_i18n` edited as raw JSON — footgun for non-technical admins. Acceptable as "advanced" for now.
 
 ## Known external blockers (not code bugs)

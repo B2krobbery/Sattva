@@ -127,7 +127,12 @@ function tierFor(count: number): string {
  */
 export async function ensureReferralCode(user?: User | null): Promise<string | null> {
   if (!user) return null;
-  const { data, error } = await supabase.rpc('ensure_referral_code');
+  let { data, error } = await supabase.rpc('ensure_referral_code');
+  // Fresh sign-in can race session propagation → first call may 401. Retry once.
+  if (error) {
+    const { data: s } = await supabase.auth.getSession();
+    if (s.session) ({ data, error } = await supabase.rpc('ensure_referral_code'));
+  }
   if (error) {
     console.warn('[referral] ensure_referral_code failed:', error.message);
     return null;

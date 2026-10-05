@@ -140,7 +140,42 @@ async function fcmAccessToken(): Promise<string | null> {
   return access_token;
 }
 
-async function sendPushToUser(userId: string, title: string, body: string): Promise<void> {
+// FCM v1 message builder — 'pratha_notifications' is the high-importance
+// channel the app creates; 'image' renders as a big-picture notification.
+const PUSH_CHANNEL = 'pratha_notifications';
+
+function fcmMessage(target: { token?: string; topic?: string }, title: string, body: string, image?: string, route?: string) {
+  return {
+    message: {
+      ...target,
+      notification: { title, body, ...(image ? { image } : {}) },
+      data: { ...(route ? { route } : {}) },
+      android: {
+        priority: 'HIGH',
+        notification: {
+          channel_id: PUSH_CHANNEL,
+          ...(image ? { image } : {}),
+          default_vibrate_timings: true,
+          default_light_settings: true,
+        },
+      },
+    },
+  };
+}
+
+async function fcmSend(target: { token?: string; topic?: string }, title: string, body: string, image?: string, route?: string): Promise<boolean> {
+  const accessToken = await fcmAccessToken();
+  if (!accessToken) { console.log('push skipped: no fcm_service_account secret'); return false; }
+  const r = await fetch('https://fcm.googleapis.com/v1/projects/sattva-utsavam-dev/messages:send', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(fcmMessage(target, title, body, image, route)),
+  });
+  if (!r.ok) console.error('fcm send:', await r.text());
+  return r.ok;
+}
+
+async function sendPushToUser(userId: string, title: string, body: string, image?: string, route?: string): Promise<void> {
   const accessToken = await fcmAccessToken();
   if (!accessToken) { console.log('push skipped: no fcm_service_account secret'); return; }
 
@@ -151,11 +186,18 @@ async function sendPushToUser(userId: string, title: string, body: string): Prom
     fetch('https://fcm.googleapis.com/v1/projects/sattva-utsavam-dev/messages:send', {
       method: 'POST',
       headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: { token, notification: { title, body } } }),
+      body: JSON.stringify(fcmMessage({ token }, title, body, image, route)),
     }).then(async (r) => {
       if (!r.ok) console.error('fcm send:', await r.text());
     })
   ));
+}
+
+/** In-app inbox row — users get notified even when email/push fail. */
+async function notifyInApp(userId: string, kind: string, title: string, body: string, data: Record<string, unknown> = {}) {
+  await admin.from('notifications').insert({
+    user_id: userId, kind, title_i18n: { en: title }, body_i18n: { en: body }, data,
+  });
 }
 
 async function alreadySent(userId: string, type: string) {
@@ -191,6 +233,31 @@ Deno.serve(async (req) => {
   const hookSecret = req.headers.get('x-notify-secret');
   const expected = await secret('notify_hook_secret');
   if (hookSecret && expected && hookSecret === expected) {
+    // broadcast: push to every registered token + in-app inbox for every user.
+    // payload: { type:'broadcast', title, body, image?, route? }
+    if (type === 'broadcast') {
+      const title = String(payload.title || 'Pratha');
+      const body = String(payload.body || '');
+      const image = payload.image ? String(payload.image) : undefined;
+      const route = payload.route ? String(payload.route) : undefined;
+      const { data: tokens } = await admin.from('push_tokens').select('token');
+      let pushOk = 0;
+      await Promise.all((tokens || []).map(async ({ token }) => {
+        if (await fcmSend({ token }, title, body, image, route)) pushOk++;
+      }));
+      const { data: users } = await admin.from('profiles').select('id');
+      if (users?.length) {
+        await admin.from('notifications').insert(
+          users.map((u) => ({
+            user_id: u.id, kind: 'broadcast',
+            title_i18n: { en: title }, body_i18n: { en: body },
+            data: { route, image },
+          }))
+        );
+      }
+      return json({ ok: true, pushed: pushOk, in_app: users?.length ?? 0 });
+    }
+
     if (type === 'referral_credited') {
       const { data: ref } = await admin.from('referrals')
         .select('id, referrer_user_id, referred_user_id').eq('id', payload.referral_id).maybeSingle();
@@ -210,11 +277,15 @@ Deno.serve(async (req) => {
         punyaTotal: String((count ?? 1) * 108),
         tier: tierFor(count ?? 1),
       });
-      try { await sendResend(resendKey, to, t.subject, t.html); } catch (e) { return json({ error: `resend: ${e}` }, 502); }
+      // In-app first — notification lands even if email/push fail.
+      await notifyInApp(ref.referrer_user_id, 'referral_credited', '+108 Punya earned 🪷',
+        `${referred?.display_name || 'A devotee'} joined Pratha through your invite`, { route: '/profile?tab=referral' });
+      let emailError: string | null = null;
+      try { await sendResend(resendKey, to, t.subject, t.html); } catch (e) { emailError = String(e); console.error('resend:', e); }
       await sendPushToUser(ref.referrer_user_id, '+108 Punya earned 🪷',
-        `${referred?.display_name || 'A devotee'} joined Pratha through your invite`);
+        `${referred?.display_name || 'A devotee'} joined Pratha through your invite`, undefined, '/profile?tab=referral');
       await markSent(ref.referrer_user_id, `referral:${ref.id}`, { referred_user_id: ref.referred_user_id });
-      return json({ ok: true });
+      return json({ ok: true, email_error: emailError });
     }
     return json({ error: 'unknown server type' }, 400);
   }
@@ -239,13 +310,18 @@ Deno.serve(async (req) => {
     ? TEMPLATES[type]({ name, nakshatra: payload.nakshatra || '', moonRashi: payload.moonRashi || '', suggestedWorship: payload.suggestedWorship || '' })
     : TEMPLATES[type]({ name });
 
-  try { await sendResend(resendKey, to, t.subject, t.html); } catch (e) { return json({ error: `resend: ${e}` }, 502); }
-  if (type === 'welcome') {
-    await sendPushToUser(uid, 'Namaste 🙏', 'Welcome to Pratha — your sanctuary awaits');
-  } else if (type === 'janma_ready') {
-    await sendPushToUser(uid, 'Your janma chart is ready ✨',
-      `${payload.nakshatra || ''} nakshatra — see your recommended pujas`);
+  // In-app notification lands regardless of email/push delivery.
+  const inApp: Record<string, [string, string, Record<string, unknown>]> = {
+    welcome: ['Namaste 🙏', 'Welcome to Pratha — your sanctuary awaits. Add your birth details to unlock personalised pujas.', { route: '/profile' }],
+    janma_ready: ['Your janma chart is ready ✨', `${payload.nakshatra || ''} nakshatra — see your recommended pujas`, { route: '/pujas' }],
+  };
+  if (inApp[type]) await notifyInApp(uid, type, ...inApp[type]);
+
+  let emailError: string | null = null;
+  try { await sendResend(resendKey, to, t.subject, t.html); } catch (e) { emailError = String(e); console.error('resend:', e); }
+  if (inApp[type]) {
+    await sendPushToUser(uid, inApp[type][0], inApp[type][1], undefined, inApp[type][2].route as string);
   }
   await markSent(uid, type);
-  return json({ ok: true });
+  return json({ ok: true, email_error: emailError });
 });

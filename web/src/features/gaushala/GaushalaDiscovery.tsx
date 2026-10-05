@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getAnimals, type Animal } from '@/lib/api/gaushala';
 import { HeartHandshake, ShieldCheck, Stethoscope, Search, Info } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { IMAGES } from '@/lib/images';
 import { CardSkeleton } from '@/components/ui/LoadingScreen';
 import { SponsorModal } from './SponsorModal';
@@ -36,12 +36,14 @@ export function GaushalaDiscovery() {
   ];
 
   const animals = (data?.animals && data.animals.length > 0) ? data.animals : defaultAnimals;
+  const breeds = [...new Set(animals.map((a) => a.breed).filter((b): b is string => Boolean(b)))];
+  const filters = ['All', 'Needs Medical', 'Calves', ...breeds];
   const filtered = animals.filter((animal) => {
     const matchesSearch = animal.name.toLowerCase().includes(search.toLowerCase());
     const matchesFilter = filter === 'All'
       || (filter === 'Needs Medical' && Boolean(animal.healthStatus) && animal.healthStatus !== 'healthy')
       || (filter === 'Calves' && animal.ageMonths !== undefined && animal.ageMonths < 12)
-      || ((filter === 'Sahiwal' || filter === 'Gir') && animal.breed?.toLowerCase().includes(filter.toLowerCase()));
+      || (breeds.includes(filter) && animal.breed?.toLowerCase() === filter.toLowerCase());
     return matchesSearch && matchesFilter;
   });
 
@@ -66,7 +68,7 @@ export function GaushalaDiscovery() {
 
       <motion.section  className="sticky top-[72px] md:top-0 z-30 bg-background/80 backdrop-blur-xl border-b border-border -mx-4 px-4 md:mx-0 md:px-0 py-3 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex overflow-x-auto hide-scrollbar gap-2">
-          {['All', 'Needs Medical', 'Calves', 'Sahiwal', 'Gir'].map((f) => (
+          {filters.map((f) => (
             <button
               key={f}
               className={cn(
@@ -134,13 +136,13 @@ export function GaushalaDiscovery() {
                 >
                   <HeartHandshake size={16} className="mr-1.5" /> Sponsor
                 </Button>
-                <Button 
-                  variant="outline"
-                  className="rounded-xl px-4"
-                  onClick={(e) => { e.stopPropagation(); navigate(`/gaushala/animal/${animal.id}`); }}
+                <Link
+                  to={`/gaushala/animal/${animal.id}`}
+                  className="rounded-xl px-4 inline-flex items-center justify-center border border-border text-text-primary hover:bg-surface-subtle transition-colors"
+                  onClick={(e) => e.stopPropagation()}
                 >
                   <Info size={18} />
-                </Button>
+                </Link>
               </div>
             </div>
           </Card>
