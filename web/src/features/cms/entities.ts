@@ -24,6 +24,7 @@ export interface EntityConfig {
   singular: string;
   icon: LucideIcon;
   titleKey: string;                    // column used as row title
+  orderCol?: string;                   // sort column — defaults to created_at (welfare_updates only has published_at)
   hasStatus: boolean;
   fields: FieldConfig[];
   /** Non-form columns required NOT NULL at insert — merged into the payload. */
@@ -163,7 +164,7 @@ export const ENTITIES: EntityConfig[] = [
   },
   {
     id: 'welfare', table: 'welfare_updates', label: 'Welfare Updates', singular: 'Welfare Post', icon: Newspaper,
-    titleKey: 'title', hasStatus: true,
+    titleKey: 'title', orderCol: 'published_at', hasStatus: true,
     fields: [
       { key: 'title', label: 'Title', type: 'text', required: true, i18n: 'title_i18n', group: 'Basics' },
       GAUSHALA_REL,

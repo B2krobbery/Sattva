@@ -7,7 +7,7 @@ import { ENTITIES, type EntityConfig } from './entities';
 import { CmsField, fieldLabel, type FormState } from './fields';
 import { cn } from '@/lib/utils';
 
-const SLUG_TABLES = new Set(['temples', 'puja_offerings', 'events', 'festivals', 'live_streams', 'seva_campaigns']);
+const SLUG_TABLES = new Set(['temples', 'puja_offerings', 'events', 'festivals', 'seva_campaigns']);
 const STATUS_CHIP: Record<string, string> = {
   draft: 'bg-amber-500/15 text-amber-600',
   published: 'bg-tulsi/15 text-tulsi',
@@ -57,7 +57,7 @@ export function CmsPanel() {
 
   const { data: rows, isLoading, error: listError } = useQuery({
     queryKey: ['cms', entity.table],
-    queryFn: () => listRows(entity.table, 'id,' + (SLUG_TABLES.has(entity.table) ? 'slug,' : '') + entity.titleKey + ',status,updated_at,created_at' + (entity.table === 'animals' ? ',is_public' : '')),
+    queryFn: () => listRows(entity.table, 'id,' + (SLUG_TABLES.has(entity.table) ? 'slug,' : '') + entity.titleKey + ',status,' + (entity.orderCol || 'created_at') + (entity.table === 'animals' ? ',is_public' : ''), entity.orderCol || 'created_at'),
   });
 
   const filtered = (rows || []).filter((r) =>
