@@ -58,20 +58,32 @@ export async function getAdminStats(): Promise<Record<string, number>> {
  * Bookings visible to the caller per RLS (own temple's or all for super admin).
  */
 export async function getAdminBookings(): Promise<AdminBooking[]> {
+  // NOTE: no devotee:profiles embed — user_id references auth.users, not
+  // profiles, so PostgREST can't resolve it and 400s the whole query.
+  // Devotee names are looked up in a second query instead.
   const { data, error } = await supabase
     .from('puja_bookings')
     .select(`
       id, user_id, temple_id, booking_date, quantity, status,
-      offering:puja_offerings ( title_i18n ),
-      temple:temples ( name_i18n ),
-      devotee:profiles ( display_name )
+      offering:puja_offerings ( name_i18n ),
+      temple:temples ( name_i18n )
     `)
     .order('booking_date', { ascending: false })
     .limit(100);
   if (error) throw error;
 
+  const userIds = [...new Set((data || []).map((b) => b.user_id))];
+  const names = new Map<string, string>();
+  if (userIds.length) {
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, display_name')
+      .in('id', userIds);
+    (profiles || []).forEach((p) => names.set(p.id, p.display_name || 'Devotee'));
+  }
+
   return (data || []).map((b) => {
-    const title = (b.offering as { title_i18n?: Record<string, string> } | null)?.title_i18n;
+    const title = (b.offering as { name_i18n?: Record<string, string> } | null)?.name_i18n;
     const tname = (b.temple as { name_i18n?: Record<string, string> } | null)?.name_i18n;
     return {
       id: b.id,
@@ -82,7 +94,7 @@ export async function getAdminBookings(): Promise<AdminBooking[]> {
       bookingDate: b.booking_date,
       quantity: b.quantity ?? 1,
       status: b.status,
-      devoteeName: (b.devotee as { display_name?: string } | null)?.display_name || 'Devotee',
+      devoteeName: names.get(b.user_id) || 'Devotee',
     };
   });
 }
@@ -148,17 +160,23 @@ export interface OutboxRow {
 export async function getOutbox(): Promise<OutboxRow[]> {
   const { data, error } = await supabase
     .from('notification_outbox')
-    .select('id, template, status, last_error, created_at, payload, devotee:profiles(display_name)')
+    .select('id, template, status, last_error, created_at, payload, user_id')
     .order('created_at', { ascending: false })
     .limit(50);
   if (error) throw error;
+  const userIds = [...new Set((data || []).map((r) => r.user_id).filter(Boolean))];
+  const names = new Map<string, string>();
+  if (userIds.length) {
+    const { data: profiles } = await supabase.from('profiles').select('id, display_name').in('id', userIds);
+    (profiles || []).forEach((p) => names.set(p.id, p.display_name || 'Devotee'));
+  }
   return (data || []).map((r) => {
     const payload = r.payload as { title?: unknown };
     const title = typeof payload?.title === 'string' ? payload.title
       : (payload?.title as Record<string, string>)?.en || r.template;
     return {
       id: r.id, template: r.template, status: r.status,
-      title, devoteeName: (r.devotee as { display_name?: string } | null)?.display_name || '—',
+      title, devoteeName: names.get(r.user_id) || '—',
       createdAt: r.created_at, lastError: r.last_error,
     };
   });
