@@ -244,3 +244,19 @@ cd web && npx cap sync android && cd android && ANDROID_HOME=~/Android/Sdk ./gra
   directly. mobile-mcp can't see inside WebViews (accessibility exposes only the WebView
   container), so CDP is the better tool for in-app UI verification.
 
+
+## Public landing page (added 2026-10-07)
+
+- `/` now routes by auth state (`HomeOrLanding` in `web/src/App.tsx`): signed-out visitors get
+  `web/src/features/landing/Landing.tsx`, signed-in devotees keep the `Home` dashboard.
+- Landing is a full-bleed editorial page (escapes shell padding via negative margins) with:
+  cinematic hero, discovery tile rail, festivals+events rail, maroon Sankalpa conversion band
+  (top-3 published pujas with real prices), janma personalization split, dark Live Darshan band,
+  Gaushala editorial, Seva participation grid, real-data trust strip, final CTA.
+- New tokens: `--color-maroon`, `--color-maroon-deep`, `--color-saffron`, `--color-cream`
+  (light + dark variants in `index.css`/`@theme`).
+- New API fns in `discover.ts`: `getFestivals()`, `getEvents()` (list queries; detail fns unchanged).
+- **Reveal pattern**: CSS scroll-driven `animation-timeline: view()` via `.landing-reveal` —
+  content renders visible by default; no JS/IntersectionObserver dependency (learned: framer
+  `whileInView` can strand content at opacity:0 in throttled/headless contexts).
+- Verified: desktop 1440px + mobile 390px screenshots, all sections render, zero console errors.

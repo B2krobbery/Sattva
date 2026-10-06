@@ -15,7 +15,11 @@
   --color-gold-light: #FBF5E6;
   --color-tulsi: #2D5A43;
   --color-tulsi-light: #EBF3EE;
-  
+  --color-maroon: #571D16;
+  --color-maroon-deep: #381310;
+  --color-saffron: #E8892B;
+  --color-cream: #FAF3E3;
+
   --color-background: #F9F6F0;
   --color-surface: #FFFFFF;
   --color-surface-subtle: #F3ECE1;
@@ -129,6 +133,10 @@
     --color-sandstone: #A89885;
     --color-tulsi: #529B74;
     --color-tulsi-light: rgba(82, 155, 116, 0.15);
+    --color-maroon: #7A2B20;
+    --color-maroon-deep: #24100D;
+    --color-saffron: #E8892B;
+    --color-cream: #FAF3E3;
 
     /* Surfaces & Backgrounds */
     --color-background: #12100E;

@@ -170,6 +170,34 @@ export async function getEvent(slugOrId: string): Promise<EventItem | null> {
   return data ? mapEvent(data) : null;
 }
 
+export async function getFestivals(): Promise<Festival[]> {
+  const { data, error } = await supabase
+    .from('festivals')
+    .select('id,slug,name,name_i18n,summary_i18n,month_hint,cover_image_url')
+    .eq('status', 'published')
+    .order('featured', { ascending: false })
+    .order('name');
+  if (error) throw error;
+  return (data ?? []).map((row: any) => ({
+    id: row.id,
+    slug: row.slug,
+    name: row.name || localized(row.name_i18n),
+    summary: localized(row.summary_i18n) || undefined,
+    monthHint: row.month_hint || undefined,
+    imageUrl: row.cover_image_url || undefined,
+  }));
+}
+
+export async function getEvents(): Promise<EventItem[]> {
+  const { data, error } = await supabase
+    .from('events')
+    .select(EVENT_SELECT)
+    .eq('status', 'published')
+    .order('starts_at');
+  if (error) throw error;
+  return (data ?? []).map(mapEvent);
+}
+
 export async function getFestival(slugOrId: string): Promise<Festival | null> {
   const { data, error } = await bySlugOrId('festivals', slugOrId, 'id,slug,name,name_i18n,summary_i18n,body_i18n,month_hint,cover_image_url').maybeSingle();
   if (error) throw error;

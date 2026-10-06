@@ -10,6 +10,7 @@ import { handleAuthDeepLink } from '@/lib/auth/oauth';
 import { captureInboundReferral } from '@/lib/referral';
 
 import { Home } from '@/features/home/Home';
+import { Landing } from '@/features/landing/Landing';
 import { Auth } from '@/features/auth/Auth';
 
 import { GaushalaDiscovery } from '@/features/gaushala/GaushalaDiscovery';
@@ -41,6 +42,13 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+// '/' is the public marketing landing for visitors; signed-in devotees land
+// on their personal dashboard instead.
+const HomeOrLanding = () => {
+  const { user } = useAuth();
+  return user ? <Home /> : <Landing />;
+};
+
 export const queryClient = new QueryClient();
 // Re-exported so the Expo DOM bridge shares this module copy; a second
 // react-query instance would split the provider context at runtime.
@@ -59,7 +67,7 @@ export function PrathaAppContent() {
           </ProtectedRoute>
         }
       >
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<HomeOrLanding />} />
         <Route path="/discover" element={<Discover />} />
         <Route path="/temples/:slug" element={<TempleDetail />} />
         <Route path="/events/:slug" element={<EventDetail />} />
