@@ -570,6 +570,87 @@
 .landing-final-link:hover { color: #E9C46A; border-color: #E9C46A; }
 .landing-final-dot { color: rgba(233,196,106,0.5); }
 
+/* ── Floating controls (Rishi + ambience) ─────────────── */
+
+.landing-floaters {
+  position: fixed;
+  right: 18px;
+  bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+  z-index: 45;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+}
+@media (min-width: 768px) {
+  .landing-floaters { bottom: 32px; right: 32px; }
+}
+
+.landing-floater {
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.landing-floater--ambience {
+  width: 40px; height: 40px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  box-shadow: var(--shadow-md);
+}
+.landing-floater--ambience.is-on {
+  background: var(--color-gold-light);
+  border-color: var(--color-gold);
+  color: var(--color-text-gold);
+}
+.landing-floater--ambience.is-on svg { animation: landing-sway 3s ease-in-out infinite; }
+@keyframes landing-sway { 0%,100% { transform: rotate(-6deg) } 50% { transform: rotate(6deg) } }
+
+.landing-floater--rishi {
+  position: relative;
+  width: 58px; height: 58px;
+  background:
+    radial-gradient(120% 120% at 30% 25%, #E9C46A 0%, var(--color-saffron) 45%, var(--color-terracotta) 100%);
+  box-shadow: 0 8px 28px rgba(184, 74, 40, 0.45), inset 0 1px 0 rgba(250,243,227,0.5);
+}
+.landing-rishi-om {
+  font-family: var(--font-family-serif);
+  font-size: 1.5rem; font-weight: 700;
+  color: #381310;
+  line-height: 1;
+}
+.landing-rishi-ring {
+  position: absolute; inset: -4px;
+  border-radius: 50%;
+  border: 2px solid rgba(232, 137, 43, 0.55);
+  animation: landing-ring 2.8s ease-out infinite;
+  pointer-events: none;
+}
+@keyframes landing-ring {
+  0%   { transform: scale(0.9); opacity: 0.9; }
+  70%  { transform: scale(1.35); opacity: 0; }
+  100% { transform: scale(1.35); opacity: 0; }
+}
+
+.landing-rishi-hint {
+  position: absolute;
+  right: 68px; bottom: 12px;
+  display: flex; flex-direction: column; align-items: flex-start;
+  background: var(--color-maroon-deep);
+  color: var(--color-cream);
+  font-size: 0.75rem; font-weight: 700; letter-spacing: 0.02em;
+  padding: 8px 14px;
+  border-radius: 14px 14px 4px 14px;
+  border: 1px solid rgba(233,196,106,0.3);
+  box-shadow: 0 6px 20px rgba(24,12,8,0.4);
+  white-space: nowrap;
+}
+.landing-rishi-hint-sub {
+  font-size: 0.625rem; font-weight: 400;
+  color: rgba(250,243,227,0.6);
+}
+@media (min-width: 768px) { .landing-rishi-hint { bottom: 14px; } }
+
 /* ── Scroll reveal — progressive enhancement ────────────
    Elements are fully visible by default. Where CSS scroll-driven
    animations are supported, they rise in as they enter the
@@ -594,6 +675,6 @@
 /* ── Motion safety ────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
-  .landing-live-dot { animation: none; }
+  .landing-live-dot, .landing-rishi-ring, .landing-floater--ambience.is-on svg { animation: none; }
   .landing-tile img, .landing-fest-card img { transition: none; }
 }

@@ -260,3 +260,14 @@ cd web && npx cap sync android && cd android && ANDROID_HOME=~/Android/Sdk ./gra
   content renders visible by default; no JS/IntersectionObserver dependency (learned: framer
   `whileInView` can strand content at opacity:0 in throttled/headless contexts).
 - Verified: desktop 1440px + mobile 390px screenshots, all sections render, zero console errors.
+- **Imagery audit (2026-10-07)**: cropped YouTube UI chrome off `kashi-vishwanath-aarti.jpg`
+  (hero); replaced culturally-wrong/weak tile images — `sanctuary.jpg` was a Japanese-style
+  pavilion (now unused on landing), `impact-bg` mandala dropped from Live Darshan tile.
+  Current map: Temples→temple-hero, Pujas→kashi-aarti, Live Darshan→rudra-abhishekam,
+  Gaushala→fodder-monsoon (tile) + auth-bg feeding photo (section), Seva→healing,
+  Festivals→maha-sudarshana.
+- **Sacred ambience**: `web/src/features/landing/ambience.ts` synthesizes a tanpura drone
+  (Sa 136.1 Hz + Pa + octave shimmer, WebAudio, no copyrighted audio). Off by default;
+  user taps the floating control. Swap in a licensed recording later by replacing the engine.
+- **LandingFloaters**: floating Rishi orb (bottom-right, opens RishiChatModal) + ambience
+  toggle; sits above the mobile bottom nav.

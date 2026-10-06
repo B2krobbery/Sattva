@@ -17,6 +17,7 @@ import { getFestivals, getEvents, getLiveStreams } from '@/lib/api/discover';
 import { getPujas } from '@/lib/api/puja';
 import { getWelfareStats, getAnimals } from '@/lib/api/gaushala';
 import { IMAGES, getSafeImageUrl } from '@/lib/images';
+import { LandingFloaters } from './LandingFloaters';
 import './Landing.css';
 
 const fmtDate = (iso?: string) => {
@@ -33,10 +34,10 @@ const fmtDate = (iso?: string) => {
 const DISCOVERY_TILES = [
   { to: '/discover', label: 'Temples', caption: 'Sacred shrines across Bharat', img: IMAGES.pujas.templeHero },
   { to: '/pujas', label: 'Pujas', caption: 'Sankalpas performed in your name', img: IMAGES.rituals.kashiVishwanathAarti },
-  { to: '/darshan', label: 'Live Darshan', caption: 'The divine, streaming home', img: IMAGES.backgrounds.impactBg },
-  { to: '/gaushala', label: 'Gaushala', caption: 'Meet the sacred herd', img: IMAGES.animals.nandini },
-  { to: '/seva', label: 'Seva', caption: 'Fodder, medicine & care', img: IMAGES.seva.nourishment },
-  { to: '/discover', label: 'Festivals', caption: 'The living calendar of devotion', img: IMAGES.seva.sanctuary },
+  { to: '/darshan', label: 'Live Darshan', caption: 'The divine, streaming home', img: IMAGES.pujas.rudraAbhishekam },
+  { to: '/gaushala', label: 'Gaushala', caption: 'Meet the sacred herd', img: IMAGES.seva.fodderMonsoon },
+  { to: '/seva', label: 'Seva', caption: 'Fodder, medicine & care', img: IMAGES.seva.healing },
+  { to: '/discover', label: 'Festivals', caption: 'The living calendar of devotion', img: IMAGES.pujas.mahaSudarshana },
 ];
 
 // Scroll-reveal via CSS scroll-driven animations (see Landing.css): content is
@@ -91,9 +92,7 @@ export function Landing() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
           >
-            A living doorway into
-            <br />
-            India's <em>sacred traditions.</em>
+            A living doorway into India's <em>sacred traditions.</em>
           </motion.h1>
           <motion.p
             className="landing-hero-sub"
@@ -323,15 +322,15 @@ export function Landing() {
       {/* ══ GAUSHALA ══ */}
       <section className="landing-section landing-split landing-split--rev">
         <Reveal className="landing-split-art landing-split-art--photo">
-          <img src={IMAGES.animals.nandini} alt="Nandini, a rescued indigenous cow at the gaushala" loading="lazy" />
+          <img src={IMAGES.backgrounds.authBg} alt="A caretaker offering fresh fodder to a garlanded cow in the gaushala courtyard" loading="lazy" />
         </Reveal>
         <Reveal className="landing-split-text">
           <p className="landing-eyebrow">Gaushala</p>
           <h2 className="landing-h2">Meet the sacred herd.</h2>
           <p className="landing-lede">
-            Behind the sanctuary live rescued indigenous cows — each with a name,
-            a story, and a passport of care. Get to know them, and keep them fed,
-            sheltered and healed.
+            Many arrived abandoned on hard roads or old and unwanted — गावो विश्वस्य मातरः,
+            the cow is the mother of the world. Here she is fed, sheltered and healed,
+            each with a name, a story, and a passport of care.
           </p>
           {!!(welfare?.totalRescued ?? animalData?.count) && (
             <div className="landing-gaushala-stat">
@@ -441,6 +440,8 @@ export function Landing() {
           )}
         </Reveal>
       </section>
+
+      <LandingFloaters />
     </div>
   );
 }
