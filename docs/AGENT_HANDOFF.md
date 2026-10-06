@@ -271,3 +271,8 @@ cd web && npx cap sync android && cd android && ANDROID_HOME=~/Android/Sdk ./gra
   user taps the floating control. Swap in a licensed recording later by replacing the engine.
 - **LandingFloaters**: floating Rishi orb (bottom-right, opens RishiChatModal) + ambience
   toggle; sits above the mobile bottom nav.
+- **Gayatri ambience (2026-10-07)**: user-provided `gayatri.mp3` (39 min, 75MB) trimmed to a
+  5-min faded 96kbps loop (~3.6MB) and uploaded to the new public `devotional-audio` Storage
+  bucket (`gayatri-mantra.mp3`, migration `devotional_audio_bucket`: public read, admin-only
+  write, audio mimes, 8MB cap). `ambience.ts` streams it with RAF volume fades; vercel.json CSP
+  gained `media-src https://*.supabase.co`. Local copy removed from `public/`.

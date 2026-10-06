@@ -29,9 +29,9 @@ export function LandingFloaters() {
         <motion.button
           className={`landing-floater landing-floater--ambience ${ambience ? 'is-on' : ''}`}
           onClick={toggleAmbience}
-          aria-label={ambience ? 'Turn off sacred ambience' : 'Turn on sacred ambience'}
+          aria-label={ambience ? 'Turn off the Gayatri Mantra' : 'Play the Gayatri Mantra softly'}
           aria-pressed={ambience}
-          title={ambience ? 'Silence the drone' : 'A soft sacred drone'}
+          title={ambience ? 'Silence the Gayatri Mantra' : 'Gayatri Mantra ambience'}
           whileTap={reduce ? {} : { scale: 0.92 }}
         >
           {ambience ? <Music size={16} /> : <VolumeX size={16} />}

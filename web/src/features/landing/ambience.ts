@@ -1,81 +1,58 @@
-// Sacred ambience — a synthesized tanpura-style drone (Sa–Pa around the
-// traditional 136.1 Hz Om tuning). Generated live with WebAudio so the
-// landing ships no copyrighted audio; a licensed recording can replace the
-// engine later without changing the control.
+// Sacred ambience — the Gayatri Mantra, streamed from Supabase Storage
+// (devotional-audio bucket, public read). Off by default; the control is
+// user-initiated so audio never plays unexpectedly. Volume ramps in via
+// requestAnimationFrame so toggling never pops.
 
-interface DroneVoice {
-  osc: OscillatorNode;
-  gain: GainNode;
+const AMBIENCE_URL =
+  'https://yxwwgynxgihrktwndhep.supabase.co/storage/v1/object/public/devotional-audio/gayatri-mantra.mp3';
+const TARGET_VOLUME = 0.45;
+const FADE_MS = 2500;
+
+let audio: HTMLAudioElement | null = null;
+let fadeRaf = 0;
+
+function fadeTo(target: number, then?: () => void) {
+  if (!audio) return;
+  cancelAnimationFrame(fadeRaf);
+  const start = audio.volume;
+  const t0 = performance.now();
+  const step = (t: number) => {
+    if (!audio) return;
+    const k = Math.min((t - t0) / FADE_MS, 1);
+    audio.volume = start + (target - start) * k;
+    if (k < 1) fadeRaf = requestAnimationFrame(step);
+    else then?.();
+  };
+  fadeRaf = requestAnimationFrame(step);
 }
 
-let ctx: AudioContext | null = null;
-let master: GainNode | null = null;
-let voices: DroneVoice[] = [];
-let lfo: OscillatorNode | null = null;
-
 export function ambienceOn(): boolean {
-  return !!master;
+  return !!audio && !audio.paused;
 }
 
 export function startAmbience() {
-  if (ctx) return;
-  ctx = new AudioContext();
-
-  const lowpass = ctx.createBiquadFilter();
-  lowpass.type = 'lowpass';
-  lowpass.frequency.value = 900;
-  lowpass.Q.value = 0.4;
-
-  master = ctx.createGain();
-  master.gain.value = 0;
-  master.connect(lowpass).connect(ctx.destination);
-
-  const freqs: [number, number][] = [
-    [136.1, 0.5],   // Sa — Om
-    [204.15, 0.34], // Pa — perfect fifth
-    [272.2, 0.12],  // octave shimmer
-  ];
-  voices = freqs.map(([freq, vol], i) => {
-    const osc = ctx!.createOscillator();
-    osc.type = 'sine';
-    osc.frequency.value = freq;
-    osc.detune.value = (i - 1) * 3; // gentle warmth
-    const gain = ctx!.createGain();
-    gain.gain.value = vol;
-    osc.connect(gain).connect(master!);
-    osc.start();
-    return { osc, gain };
+  if (audio) return;
+  audio = new Audio(AMBIENCE_URL);
+  audio.loop = true;
+  audio.volume = 0;
+  void audio.play().then(() => fadeTo(TARGET_VOLUME)).catch(() => {
+    audio = null;
   });
-
-  // Slow breathing swell
-  lfo = ctx.createOscillator();
-  lfo.type = 'sine';
-  lfo.frequency.value = 0.06;
-  const lfoGain = ctx.createGain();
-  lfoGain.gain.value = 0.035;
-  lfo.connect(lfoGain).connect(master.gain);
-  lfo.start();
-
-  master.gain.linearRampToValueAtTime(0.11, ctx.currentTime + 4);
 }
 
 export function stopAmbience() {
-  if (!ctx || !master) return;
-  const c = ctx;
-  const m = master;
-  const v = voices;
-  const l = lfo;
-  ctx = null;
-  master = null;
-  voices = [];
-  lfo = null;
-
-  m.gain.cancelScheduledValues(c.currentTime);
-  m.gain.setValueAtTime(m.gain.value, c.currentTime);
-  m.gain.linearRampToValueAtTime(0, c.currentTime + 1.5);
-  setTimeout(() => {
-    v.forEach(({ osc }) => osc.stop());
-    l?.stop();
-    void c.close();
-  }, 1800);
+  if (!audio) return;
+  const el = audio;
+  audio = null;
+  // Fade out on the element we still hold, then release it.
+  cancelAnimationFrame(fadeRaf);
+  const start = el.volume;
+  const t0 = performance.now();
+  const step = (t: number) => {
+    const k = Math.min((t - t0) / 1200, 1);
+    el.volume = start * (1 - k);
+    if (k < 1) requestAnimationFrame(step);
+    else { el.pause(); el.src = ''; }
+  };
+  requestAnimationFrame(step);
 }
