@@ -6,6 +6,9 @@ import { signInWithGoogle } from '@/lib/auth/oauth';
 // privileged access. Rotate after client testing. Remove pre-production.
 const DEMO_ADMIN = { email: 'pratha.demo.client@gmail.com', password: 'PrathaDemo!2026' };
 const DEMO_DEVOTEE = { email: 'pratha.demo.devotee@gmail.com', password: 'DemoDevotee#2026' };
+// Demo sign-in buttons ship only when explicitly enabled (launch: unset the
+// env on Vercel so production builds hide them).
+const DEMO_BUTTONS = import.meta.env.VITE_ENABLE_DEMO_BUTTONS !== 'false';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Gift } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
@@ -294,7 +297,7 @@ export function Auth() {
             <ArrowRight size={16} />
           </button>
 
-          <button
+          {DEMO_BUTTONS && <button
             type="button"
             className="btn-secondary auth-submit-btn"
             disabled={loading}
@@ -313,9 +316,9 @@ export function Auth() {
             }}
           >
             <span>{loading ? 'Signing in...' : 'Explore Admin Console'}</span>
-          </button>
+          </button>}
 
-          <button
+          {DEMO_BUTTONS && <button
             type="button"
             className="btn-secondary auth-submit-btn"
             disabled={loading}
@@ -334,7 +337,7 @@ export function Auth() {
             }}
           >
             <span>{loading ? 'Signing in...' : 'Explore Demo Account'}</span>
-          </button>
+          </button>}
 
           <button
             type="button"

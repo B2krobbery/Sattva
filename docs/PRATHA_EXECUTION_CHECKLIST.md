@@ -62,9 +62,9 @@ Test: prod → Sign in with Google → returns to pratha-two with session.
 Notes: Android side verified pattern via `pratha://auth/callback`; web redirect allowlist is the missing piece.
 
 ### PRATHA-012 — Remove demo login buttons for production
-Status: [ ] TODO · Priority: MUST (pre-launch gate, not now)
+Status: [x] DONE (gated; flip at launch)
 Acceptance: no hardcoded credentials in shipped Auth.tsx; demo accounts removable without breaking auth.
-Notes: keep until client demo done — owner's call. Flip via env flag `VITE_ENABLE_DEMO_BUTTONS`.
+Notes: buttons now render only when `VITE_ENABLE_DEMO_BUTTONS !== 'false'`. At launch set `VITE_ENABLE_DEMO_BUTTONS=false` on Vercel — zero code change needed. Creds still in source until demo accounts are retired.
 
 ### PRATHA-013 — Email confirmation / password reset round-trip on prod domain
 Status: [~] PARTIAL · Priority: MUST
