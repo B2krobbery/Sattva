@@ -390,3 +390,8 @@
   max-width: 500px;
   margin: 0 auto;
 }
+
+.panchang-disclaimer {
+  font-size: 0.6875rem; color: var(--color-text-muted); font-style: italic;
+  margin: 10px 0 0; text-align: center;
+}

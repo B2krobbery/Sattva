@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { 
@@ -17,12 +17,14 @@ import { useAuth } from '@/features/auth/AuthContext';
 import { getProfile } from '@/lib/api/profile';
 import { getPujas } from '@/lib/api/puja';
 import { getWelfareStats } from '@/lib/api/gaushala';
+import { computePanchang } from '@/lib/panchang';
 import { IMAGES } from '@/lib/images';
 import { RishiChatModal } from '@/features/ai/RishiChatModal';
 import { ProfileNudge } from '@/components/profile/ProfileNudge';
 import './Home.css';
 
 export function Home() {
+  const panchang = useMemo(() => computePanchang(new Date()), []);
   const { user } = useAuth();
   const [rishiOpen, setRishiOpen] = useState(false);
   const { data: profileData } = useQuery({
@@ -154,7 +156,7 @@ export function Home() {
         </button>
       </section>
 
-      {/* Rich Panchang Almanac Widget */}
+      {/* Panchang — computed client-side (low-precision astronomy), not hardcoded */}
       <section className="panchang-card">
         <div className="panchang-header">
           <div className="panchang-title-group">
@@ -162,35 +164,36 @@ export function Home() {
             <h3 className="font-serif text-lg font-semibold">Today's Vedic Panchang</h3>
           </div>
           <span className="badge-tulsi">
-            Margashirsha Maas
+            {panchang.maas} Maas
           </span>
         </div>
 
         <div className="panchang-grid">
           <div className="panchang-cell">
             <div className="panchang-label">Tithi</div>
-            <div className="panchang-value">Shukla Ekadashi</div>
-            <div className="panchang-sub">Auspicious for Vishnu Pooja</div>
+            <div className="panchang-value">{panchang.tithi}</div>
+            <div className="panchang-sub">{panchang.tithiHint}</div>
           </div>
 
           <div className="panchang-cell">
             <div className="panchang-label">Nakshatra</div>
-            <div className="panchang-value">Mrigashirsha</div>
-            <div className="panchang-sub">Ruled by Soma • Gentle</div>
+            <div className="panchang-value">{panchang.nakshatra}</div>
+            <div className="panchang-sub">{panchang.nakshatraHint}</div>
           </div>
 
           <div className="panchang-cell">
-            <div className="panchang-label">Auspicious Muhurat</div>
-            <div className="panchang-value">Abhijit Muhurat</div>
-            <div className="panchang-sub">11:48 AM – 12:36 PM</div>
+            <div className="panchang-label">Sun (Rashi)</div>
+            <div className="panchang-value">{panchang.sunSign}</div>
+            <div className="panchang-sub">Sidereal solar month</div>
           </div>
 
           <div className="panchang-cell">
-            <div className="panchang-label">Surya Timings</div>
-            <div className="panchang-value">Sunrise 06:28 AM</div>
-            <div className="panchang-sub">Sunset 06:42 PM</div>
+            <div className="panchang-label">Paksha</div>
+            <div className="panchang-value">{panchang.paksha}</div>
+            <div className="panchang-sub">{panchang.paksha === 'Shukla' ? 'Waxing moon' : 'Waning moon'}</div>
           </div>
         </div>
+        <p className="panchang-disclaimer">Approximate — computed for ritual orientation, not muhurat precision.</p>
       </section>
 
       {/* Sanctuary Impact Strip (Real Data) */}

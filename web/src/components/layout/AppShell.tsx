@@ -87,7 +87,8 @@ export function AppShell() {
       </header>
 
       {/* Desktop Side Navigation */}
-      <nav className="hidden md:flex flex-col fixed top-0 bottom-0 left-0 w-64 bg-surface border-r border-border-subtle p-6 z-50">
+      <a href="#main-content" className="skip-link">Skip to content</a>
+      <nav aria-label="Primary" className="hidden md:flex flex-col fixed top-0 bottom-0 left-0 w-64 bg-surface border-r border-border-subtle p-6 z-50">
         <div className="pb-8 mb-6 border-b border-border-subtle">
           <NavLink to="/" className="flex items-center gap-3 outline-none focus-visible:ring-2 focus-visible:ring-terracotta rounded-lg">
             <span className="font-serif text-3xl text-terracotta font-bold leading-none">ॐ</span>
@@ -161,14 +162,14 @@ export function AppShell() {
       </nav>
 
       {/* Main Content Area */}
-      <main className="flex-1 md:ml-64 pb-[calc(80px+env(safe-area-inset-bottom,0px))] md:pb-8">
+      <main id="main-content" className="flex-1 md:ml-64 pb-[calc(80px+env(safe-area-inset-bottom,0px))] md:pb-8">
         <div className="p-4 md:p-8 xl:px-12 2xl:px-16 min-h-[calc(100vh-140px)]">
           <Outlet />
         </div>
       </main>
 
       {/* Mobile Floating Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-[calc(12px+env(safe-area-inset-bottom,0px))] left-4 right-4 h-16 flex items-center justify-around px-2 z-50 bg-surface/85 backdrop-blur-xl border border-border rounded-2xl shadow-sm">
+      <nav aria-label="Primary mobile" className="md:hidden fixed bottom-[calc(12px+env(safe-area-inset-bottom,0px))] left-4 right-4 h-16 flex items-center justify-around px-2 z-50 bg-surface/85 backdrop-blur-xl border border-border rounded-2xl shadow-sm">
         {navItems.map((item) => (
           <NavLink
             key={item.path}

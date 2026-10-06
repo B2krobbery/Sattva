@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useSyncExternalStore } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { X, Send, Sparkles, Loader2 } from 'lucide-react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { AnimatePresence, motion } from 'motion/react';
@@ -20,9 +21,22 @@ interface RishiChatModalProps {
 interface Message {
   role: 'user' | 'assistant';
   content: string;
+  link?: { to: string; label: string };
+}
+
+// Extract an optional trailing machine line: LINK:/route|Label
+function parseReply(text: string): Message {
+  const m = text.match(/\n?LINK:(\/[\w\/\?=&-]+)\|([^\n]+)\s*$/);
+  if (!m) return { role: 'assistant', content: text };
+  return {
+    role: 'assistant',
+    content: text.slice(0, m.index).trim(),
+    link: { to: m[1], label: m[2].trim().slice(0, 40) },
+  };
 }
 
 export function RishiChatModal({ isOpen, onClose, initialPrompt }: RishiChatModalProps) {
+  const navigate = useNavigate();
   const mantraOn = useSyncExternalStore(subscribeAmbience, ambienceOn);
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -62,14 +76,14 @@ export function RishiChatModal({ isOpen, onClose, initialPrompt }: RishiChatModa
 
     try {
       const res = await askRishi(text);
-      setMessages(prev => [...prev, { role: 'assistant', content: res.answer || 'Blessings upon your journey. May peace prevail.' }]);
+      setMessages(prev => [...prev, parseReply(res.answer || 'Blessings upon your journey. May peace prevail.')]);
     } catch (e: any) {
+      const isAuth = e?.status === 401 || e?.message === 'not_authenticated' || /sign in/i.test(e?.message ?? '');
       setMessages(prev => [
         ...prev,
-        {
-          role: 'assistant',
-          content: 'The sanctuary winds carry peace. An offline contemplation: In the Atharva Veda, serving Gomata and invoking divine fire brings harmony to hearth and soul.'
-        }
+        isAuth
+          ? { role: 'assistant', content: 'This conversation needs your sanctuary sign-in — your questions are personal and I keep them to your account.', link: { to: '/login', label: 'Sign in to continue' } }
+          : { role: 'assistant', content: 'The sanctuary winds carry peace. An offline contemplation: In the Atharva Veda, serving Gomata and invoking divine fire brings harmony to hearth and soul.' }
       ]);
     } finally {
       setLoading(false);
@@ -142,6 +156,14 @@ export function RishiChatModal({ isOpen, onClose, initialPrompt }: RishiChatModa
                           : "bg-surface border border-border text-text-primary rounded-bl-sm"
                       )}>
                         {m.content}
+                        {m.link && (
+                          <button
+                            onClick={() => { onClose(); navigate(m.link!.to); }}
+                            className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-terracotta/10 text-terracotta text-xs font-semibold hover:bg-terracotta/20 transition-colors"
+                          >
+                            {m.link.label} →
+                          </button>
+                        )}
                       </div>
                     </motion.div>
                   ))}
