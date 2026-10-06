@@ -134,6 +134,8 @@ export function Landing() {
               <Link to="/seva">Seva</Link>
               <Link to="/gaushala">Gaushala</Link>
               <Link to="/discover">Festivals</Link>
+              <Link to="/mantras">Mantras</Link>
+              <Link to="/learn">Learn</Link>
               <button type="button" onClick={() => window.dispatchEvent(new CustomEvent('pratha-open-rishi'))}>
                 Ask Rishi
               </button>

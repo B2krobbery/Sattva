@@ -1,0 +1,26 @@
+.mantras-page { display: flex; flex-direction: column; gap: 1.4rem; }
+.mantras-hero { background: linear-gradient(125deg, #24150e, #3e2114); color: #fffaf2; border-radius: 1.1rem; padding: 2rem; }
+.mantras-hero h1 { max-width: 34rem; margin: .8rem 0 .45rem; color: #fffaf2; }
+.mantras-hero p { max-width: 38rem; color: #ead6c3; }
+
+.mantra-list { display: flex; flex-direction: column; gap: 14px; }
+.mantra-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-xl);
+  padding: 22px 22px 20px;
+}
+.mantra-card-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.mantra-name { font-family: var(--font-family-serif); font-size: 1.125rem; margin: 0; color: var(--color-text-primary); }
+.mantra-deity {
+  font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--color-text-gold);
+}
+.mantra-devanagari {
+  font-size: 1.25rem; line-height: 1.9;
+  color: var(--color-text-primary);
+  margin: 14px 0 4px;
+  font-family: var(--font-family-serif);
+}
+.mantra-translit { font-size: 0.8125rem; color: var(--color-text-muted); font-style: italic; margin: 0 0 10px; }
+.mantra-meaning { font-size: 0.875rem; color: var(--color-text-secondary); line-height: 1.65; margin: 0; }

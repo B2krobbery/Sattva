@@ -25,6 +25,9 @@ const LiveDarshan = React.lazy(() => import('@/features/discover/LiveDarshan').t
 const LiveDarshanDetail = React.lazy(() => import('@/features/discover/LiveDarshan').then((m) => ({ default: m.LiveDarshanDetail })));
 const PujaDiscovery = React.lazy(() => import('@/features/pujas/PujaDiscovery').then((m) => ({ default: m.PujaDiscovery })));
 const GaushalaDiscovery = React.lazy(() => import('@/features/gaushala/GaushalaDiscovery').then((m) => ({ default: m.GaushalaDiscovery })));
+const Mantras = React.lazy(() => import('@/features/mantras/Mantras').then((m) => ({ default: m.Mantras })));
+const Learn = React.lazy(() => import('@/features/learn/Learn').then((m) => ({ default: m.Learn })));
+const ArticleDetail = React.lazy(() => import('@/features/learn/Learn').then((m) => ({ default: m.ArticleDetail })));
 const AnimalPassport = React.lazy(() => import('@/features/gaushala/AnimalPassport').then((m) => ({ default: m.AnimalPassport })));
 const SevaExperience = React.lazy(() => import('@/features/seva/SevaExperience').then((m) => ({ default: m.SevaExperience })));
 const Profile = React.lazy(() => import('@/features/profile/Profile').then((m) => ({ default: m.Profile })));
@@ -89,6 +92,9 @@ export function PrathaAppContent() {
         <Route path="/gaushala" element={<GaushalaDiscovery />} />
         <Route path="/gaushala/animal/:id" element={<AnimalPassport />} />
         <Route path="/seva" element={<SevaExperience />} />
+        <Route path="/mantras" element={<Mantras />} />
+        <Route path="/learn" element={<Learn />} />
+        <Route path="/learn/:slug" element={<ArticleDetail />} />
         <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
         <Route path="/admin" element={<RequireAuth><Admin /></RequireAuth>} />
       </Route>

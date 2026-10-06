@@ -171,7 +171,7 @@ Relevant: `Profile.tsx` tabs, existing bookings/contributions queries.
 Done-notes: New "My Journey" first tab: stat tiles (seva ₹, pujas, punya+tier, family) + janma status + contextual next-step nudges routing to real actions.
 
 ### PRATHA-062 — Saved/favorite temples
-Status: [ ] TODO · Priority: NEXT
+Status: [x] DONE
 Acceptance: heart/bookmark on temple → `saved_items` table → shows in My Journey. Needs migration + RLS + UI.
 
 ---
@@ -180,23 +180,31 @@ Acceptance: heart/bookmark on temple → `saved_items` table → shows in My Jou
 
 Done-notes: NEXT
 
+Done-notes: saved_items table + RLS (own rows only), bookmark on TempleDetail hero, Journey tab lists saved chips. Anon tap → login w/ return.
+
 ### PRATHA-070 — Learn section v1
-Status: [ ] TODO · Priority: NEXT
+Status: [x] DONE
 Acceptance: `/learn` route; CMS-managed articles (reuse content CMS pattern); beginner/intermediate/advanced tiers from PDF §21; clean reading view.
 Backend: new `articles` table (or reuse a generic `content_items`), RLS published-read, admin-write.
 
+Done-notes: /learn list + /learn/:slug reader; articles table w/ source_type + claim_type; 3 real seeded articles.
+
 ### PRATHA-071 — Source-layer convention
-Status: [ ] TODO · Priority: NEXT (ships with 070)
+Status: [x] DONE
 Acceptance: every knowledge article can mark source type (Purana/Itihasa/Agama/Temple tradition/Acharya/modern interpretation) and belief-vs-evidence label, per PDF §22 credibility rule.
 
 ---
 
 ## 8. Mantra / Sadhana
 
+Done-notes: source_type (purana/itihasa/agama/temple_tradition/acharya/modern) + claim_type (scriptural/traditional/historical/interpretation) badges on cards + article footer honesty note.
+
 ### PRATHA-080 — Mantra library v1
-Status: [ ] TODO · Priority: NEXT
+Status: [x] DONE
 Acceptance: `/mantras` with Devanagari + transliteration + meaning; audio slot optional (devotional-audio bucket pattern exists); daily mantra surface.
 Notes: keep scope small — static CMS list + optional audio URL.
+
+Done-notes: mantras table + /mantras page — devanagari, transliteration, deity, meaning; 5 real mantras seeded.
 
 ### PRATHA-081 — Daily Sadhana streak
 Status: [ ] TODO · Priority: FUTURE
@@ -303,12 +311,14 @@ Status: [x] DONE
 Notes: heads-up + deep-link + publish broadcast verified on Redmi.
 
 ### PRATHA-162 — Notification preferences per user
-Status: [ ] TODO · Priority: NEXT
+Status: [x] DONE
 Acceptance: profile setting toggles engagement pushes (respect `marketing_opt_in`-style flag in notify-send targeting).
 
 ---
 
 ## 17. Admin / CMS
+
+Done-notes: profiles.notifications_enabled (default true) + Settings toggle + orchestrator excludes opted-out users (edge fn v5 deployed).
 
 ### PRATHA-170 — CMS 9-section publish
 Status: [x] DONE
@@ -319,15 +329,19 @@ Status: [ ] TODO · Priority: NEXT
 Acceptance: admin uploads cover image → `public-media` bucket → saved URL (bucket + admin write policy already exist).
 
 ### PRATHA-172 — Booking management actions
-Status: [ ] TODO · Priority: NEXT
+Status: [x] DONE
 Acceptance: admin can confirm/cancel `pending_payment` bookings from console; audit row written.
 
+Done-notes: Already implemented — admin bookings have Mark Performed / Cancel wired to RPCs.
+
 ### PRATHA-173 — Audit log viewer
-Status: [ ] TODO · Priority: NEXT
+Status: [x] DONE
 
 ---
 
 ## 18. Personalization
+
+Done-notes: Admin Activity tab streams audit_log (admin-select policy from m020).
 
 ### PRATHA-180 — Janma-based recommendations surface
 Status: [~] PARTIAL · Priority: NEXT

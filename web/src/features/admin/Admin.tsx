@@ -5,7 +5,7 @@ import { useAuth } from '@/features/auth/AuthContext';
 import {
   getMyAdminRoles, getAdminStats, getAdminBookings, completeBooking, cancelBooking,
   getAdminProfiles, getAllRoles, grantRole, revokeRole, getOutbox, runOrchestrator,
-  getBusinessStats,
+  getBusinessStats, getAuditLog,
   type AdminBooking,
 } from '@/lib/api/admin';
 import { CmsPanel } from '@/features/cms/CmsPanel';
@@ -13,6 +13,7 @@ import { motion } from 'motion/react';
 import {
   ShieldCheck, LayoutDashboard, CalendarCheck, Users, KeyRound,
   CheckCircle2, XCircle, Loader2, Megaphone, Sparkles, SendHorizonal, PencilLine,
+  Activity,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -23,6 +24,7 @@ const TABS = [
   { id: 'devotees', label: 'Devotees', icon: Users },
   { id: 'engagement', label: 'Engagement', icon: Megaphone },
   { id: 'roles', label: 'Roles', icon: KeyRound },
+  { id: 'activity', label: 'Activity', icon: Activity },
 ] as const;
 
 type TabId = typeof TABS[number]['id'];
@@ -88,6 +90,11 @@ export function Admin() {
     queryKey: ['admin-biz'],
     queryFn: getBusinessStats,
     enabled: isAdmin,
+  });
+  const { data: audit } = useQuery({
+    queryKey: ['admin-audit'],
+    queryFn: getAuditLog,
+    enabled: isAdmin && activeTab === 'activity',
   });
   const [orchMsg, setOrchMsg] = useState<string | null>(null);
 
@@ -311,6 +318,30 @@ export function Admin() {
             </div>
           ))}
           {(outbox ?? []).length === 0 && <p className="text-sm text-text-muted py-6 text-center">Queue is empty — run the planner.</p>}
+        </motion.section>
+      )}
+
+      {activeTab === 'activity' && (
+        <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col gap-2.5">
+          {(audit ?? []).map((a) => (
+            <div key={a.id} className="glass-card flex items-center justify-between gap-3 p-4 rounded-2xl border border-border-subtle bg-surface">
+              <div className="min-w-0">
+                <div className="text-sm font-semibold text-text-primary truncate">
+                  {a.tableName}{a.summary ? ` · ${a.summary}` : ''}
+                </div>
+                <div className="text-xs text-text-muted mt-0.5">
+                  {a.action} · {new Date(a.at).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                  {a.actorId && <span className="font-mono"> · {a.actorId.slice(0, 8)}</span>}
+                </div>
+              </div>
+              <span className={cn('text-[11px] font-semibold px-2.5 py-1 rounded-full shrink-0',
+                a.action === 'DELETE' ? 'bg-red-500/15 text-red-500' :
+                a.action === 'INSERT' ? 'bg-tulsi/15 text-tulsi' : 'bg-blue-500/15 text-blue-600')}>
+                {a.action}
+              </span>
+            </div>
+          ))}
+          {(audit ?? []).length === 0 && <p className="text-sm text-text-muted py-6 text-center">No recorded changes yet.</p>}
         </motion.section>
       )}
 

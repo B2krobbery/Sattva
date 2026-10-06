@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { Home, Flame, MapPin, HeartHandshake, User, Sparkles, Compass, LogIn, ShieldCheck } from 'lucide-react';
+import { Home, Flame, MapPin, HeartHandshake, User, Sparkles, Compass, LogIn, ShieldCheck, Music2, BookOpen } from 'lucide-react';
 import { RishiChatModal } from '@/features/ai/RishiChatModal';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useQuery } from '@tanstack/react-query';
@@ -36,6 +36,8 @@ export function AppShell() {
     { name: 'Pujas', path: '/pujas', icon: Flame },
     { name: 'Gaushala', path: '/gaushala', icon: MapPin },
     { name: 'Seva', path: '/seva', icon: HeartHandshake },
+    { name: 'Mantras', path: '/mantras', icon: Music2 },
+    { name: 'Learn', path: '/learn', icon: BookOpen },
     { name: 'Profile', path: '/profile', icon: User },
     ...(isAdmin ? [{ name: 'Admin', path: '/admin', icon: ShieldCheck }] : []),
   ];

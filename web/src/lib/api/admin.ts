@@ -203,3 +203,29 @@ export async function getBusinessStats(): Promise<{ sevaRupees: number; pendingB
     punyaIssued: (refCount ?? 0) * 108,
   };
 }
+
+export interface AuditRow {
+  id: number;
+  actorId: string | null;
+  tableName: string;
+  action: string;
+  at: string;
+  summary: string;
+}
+
+export async function getAuditLog(): Promise<AuditRow[]> {
+  const { data, error } = await supabase
+    .from('audit_log')
+    .select('id, actor_id, table_name, action, at, after')
+    .order('at', { ascending: false })
+    .limit(60);
+  if (error) throw error;
+  return (data ?? []).map((r: any) => ({
+    id: r.id,
+    actorId: r.actor_id,
+    tableName: r.table_name,
+    action: r.action,
+    at: r.at,
+    summary: r.after?.title || r.after?.name || r.after?.slug || r.after?.status || '',
+  }));
+}

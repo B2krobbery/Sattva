@@ -1,8 +1,11 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, MapPin, Landmark, ExternalLink, Radio, CalendarDays, Flame, Clock, Globe } from 'lucide-react';
+import { ArrowLeft, MapPin, Landmark, ExternalLink, Radio, CalendarDays, Flame, Clock, Globe, Bookmark } from 'lucide-react';
 import { motion } from 'motion/react';
 import { getTemple, getTempleEvents, getLiveStreams, type Temple } from '@/lib/api/discover';
+import { getSavedItems, toggleSavedItem } from '@/lib/api/profile';
+import { redirectToLogin } from '@/lib/auth/redirect';
+import { useAuth } from '@/features/auth/AuthContext';
 import { supabase, localized } from '@/lib/supabase';
 
 interface TempleOffering {
@@ -49,11 +52,25 @@ function formatDateRange(startsAt?: string, endsAt?: string): string {
 
 export function TempleDetail() {
   const { slug } = useParams<{ slug: string }>();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   const { data: temple, isLoading, isError } = useQuery({
     queryKey: ['temple', slug],
     queryFn: () => getTemple(slug!),
     enabled: !!slug,
   });
+  const { data: savedItems } = useQuery({
+    queryKey: ['saved-items'],
+    queryFn: getSavedItems,
+    enabled: !!user,
+  });
+  const isSaved = !!savedItems?.some((s) => s.entityType === 'temple' && s.entitySlug === slug);
+  const toggleSave = async () => {
+    if (!user) { redirectToLogin(); return; }
+    if (!slug || !temple) return;
+    await toggleSavedItem({ entityType: 'temple', entitySlug: slug, entityTitle: temple.name }, isSaved);
+    queryClient.invalidateQueries({ queryKey: ['saved-items'] });
+  };
   const { data: offerings } = useQuery({
     queryKey: ['temple-offerings', temple?.id],
     queryFn: () => getTempleOfferings(temple!.id),
@@ -94,6 +111,14 @@ export function TempleDetail() {
           <div className="relative w-full aspect-[21/9] max-h-80 overflow-hidden bg-surface-subtle">
             <img src={temple.imageUrl} alt={temple.name} className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+            <button
+              onClick={toggleSave}
+              aria-label={isSaved ? 'Remove from My Journey' : 'Save to My Journey'}
+              title={isSaved ? 'Saved to My Journey' : 'Save to My Journey'}
+              className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full flex items-center justify-center bg-black/40 backdrop-blur-sm border border-white/25 text-white hover:bg-black/60 transition-colors"
+            >
+              <Bookmark size={17} fill={isSaved ? '#E9C46A' : 'none'} color={isSaved ? '#E9C46A' : 'currentColor'} />
+            </button>
             <div className="absolute bottom-0 left-0 right-0 p-5 md:p-7">
               <TempleTitle temple={temple} light />
             </div>

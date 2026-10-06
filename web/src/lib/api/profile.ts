@@ -12,6 +12,7 @@ export interface Profile {
   birthTime?: string;
   birthPlace?: string;
   avatarPath?: string;
+  notificationsEnabled?: boolean;
 }
 
 export interface Donation {
@@ -56,9 +57,9 @@ const CONTRIBUTION_ERROR_MESSAGES: Record<string, string> = {
 };
 
 export async function getProfile(): Promise<{ profile: Profile | null }> {
-  const { data, error } = await supabase.from('profiles').select('id,display_name,city,gotra,nakshatra,phone,birth_date,birth_time,birth_place,avatar_path').maybeSingle();
+  const { data, error } = await supabase.from('profiles').select('id,display_name,city,gotra,nakshatra,phone,birth_date,birth_time,birth_place,avatar_path,notifications_enabled').maybeSingle();
   if (error) throw error;
-  return { profile: data ? { id: data.id, displayName: data.display_name, city: data.city, gotra: data.gotra, nakshatra: data.nakshatra, phone: data.phone, birthDate: data.birth_date, birthTime: data.birth_time, birthPlace: data.birth_place, avatarPath: data.avatar_path } : null };
+  return { profile: data ? { id: data.id, displayName: data.display_name, city: data.city, gotra: data.gotra, nakshatra: data.nakshatra, phone: data.phone, birthDate: data.birth_date, birthTime: data.birth_time, birthPlace: data.birth_place, avatarPath: data.avatar_path, notificationsEnabled: data.notifications_enabled } : null };
 }
 
 export async function updateProfile(profile: Partial<Profile>): Promise<{ success: boolean }> {
@@ -71,7 +72,7 @@ export async function updateProfile(profile: Partial<Profile>): Promise<{ succes
   // Only write fields the caller actually supplied — a partial update must
   // never null out columns it wasn't asked to touch (a birth-details save
   // was wiping `phone` because it wasn't in the payload).
-  const updates: Record<string, string | null> = {};
+  const updates: Record<string, string | boolean | null> = {};
   if (profile.displayName !== undefined) updates.display_name = profile.displayName;
   if (profile.city !== undefined) updates.city = profile.city;
   if (profile.gotra !== undefined) updates.gotra = profile.gotra;
@@ -81,6 +82,7 @@ export async function updateProfile(profile: Partial<Profile>): Promise<{ succes
   if (profile.birthPlace !== undefined) updates.birth_place = profile.birthPlace || null;
   if (profile.phone !== undefined) updates.phone = profile.phone || null;
   if (profile.avatarPath !== undefined) updates.avatar_path = profile.avatarPath || null;
+  if (profile.notificationsEnabled !== undefined) updates.notifications_enabled = profile.notificationsEnabled;
   if (Object.keys(updates).length === 0) return { success: true };
   const { error } = await supabase.from('profiles').update(updates).eq('id', userId);
   if (error) throw error;
@@ -213,4 +215,44 @@ export async function addFamilyMember(member: Omit<FamilyMember, 'id'>): Promise
   }).select('id').single();
   if (error) throw error;
   return { success: true, memberId: data.id };
+}
+
+export interface SavedItem {
+  entityType: 'temple' | 'festival' | 'event' | 'puja';
+  entitySlug: string;
+  entityTitle: string;
+  createdAt: string;
+}
+
+export async function getSavedItems(): Promise<SavedItem[]> {
+  const { data, error } = await supabase
+    .from('saved_items')
+    .select('entity_type, entity_slug, entity_title, created_at')
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data ?? []).map((r: any) => ({
+    entityType: r.entity_type,
+    entitySlug: r.entity_slug,
+    entityTitle: r.entity_title,
+    createdAt: r.created_at,
+  }));
+}
+
+export async function toggleSavedItem(item: Omit<SavedItem, 'createdAt'>, currentlySaved: boolean) {
+  const { data: u } = await supabase.auth.getUser();
+  if (!u.user) throw new Error('not_authenticated');
+  if (currentlySaved) {
+    const { error } = await supabase.from('saved_items').delete()
+      .eq('user_id', u.user.id).eq('entity_type', item.entityType).eq('entity_slug', item.entitySlug);
+    if (error) throw error;
+    return false;
+  }
+  const { error } = await supabase.from('saved_items').upsert({
+    user_id: u.user.id,
+    entity_type: item.entityType,
+    entity_slug: item.entitySlug,
+    entity_title: item.entityTitle,
+  });
+  if (error) throw error;
+  return true;
 }

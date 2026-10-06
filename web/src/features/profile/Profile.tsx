@@ -20,7 +20,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { useThemeMode, setThemeMode } from '@/lib/theme';
-import { getProfile, updateProfile, uploadAvatar, avatarPublicUrl, getDonations, getFamily, addFamilyMember, type Donation, type FamilyMember } from '@/lib/api/profile';
+import { getProfile, updateProfile, uploadAvatar, avatarPublicUrl, getDonations, getFamily, addFamilyMember, getSavedItems, type Donation, type FamilyMember } from '@/lib/api/profile';
 import { getBookings, type PujaBooking } from '@/lib/api/puja';
 import { useAuth } from '@/features/auth/AuthContext';
 import { IMAGES } from '@/lib/images';
@@ -47,6 +47,7 @@ export function Profile() {
   const [birthPlace, setBirthPlace] = useState('');
   const [birthSaved, setBirthSaved] = useState(false);
   const [birthInit, setBirthInit] = useState(false);
+  const [notificationsOn, setNotificationsOn] = useState(true);
   const [editName, setEditName] = useState('');
   const [editPhone, setEditPhone] = useState('');
   const [editCity, setEditCity] = useState('');
@@ -79,6 +80,12 @@ export function Profile() {
     enabled: !!user,
   });
 
+  const { data: savedItems } = useQuery({
+    queryKey: ['saved-items'],
+    queryFn: getSavedItems,
+    enabled: !!user,
+  });
+
   const profile = profileData?.profile;
   if (profile && !birthInit) {
     setBirthInit(true);
@@ -89,6 +96,7 @@ export function Profile() {
     setEditPhone(profile.phone ?? '');
     setEditCity(profile.city ?? '');
     setEditGotra(profile.gotra ?? '');
+    setNotificationsOn(profile.notificationsEnabled !== false);
   }
   const displayName = profile?.displayName || user?.user_metadata?.display_name || user?.email?.split('@')[0] || 'Devotee';
   const email = user?.email || 'Registered Devotee';
@@ -291,6 +299,23 @@ export function Profile() {
               <div>
                 <b>Janma chart ready</b>
                 <span>Nakshatra {profile.nakshatra} · birth details on file — used for puja recommendations and sankalpa.</span>
+              </div>
+            </div>
+          )}
+
+          {(savedItems?.length ?? 0) > 0 && (
+            <div className="journey-saved">
+              <h4>Saved sacred places</h4>
+              <div className="journey-saved-list">
+                {savedItems!.map((s) => (
+                  <Link
+                    key={`${s.entityType}-${s.entitySlug}`}
+                    to={s.entityType === 'temple' ? `/temples/${s.entitySlug}` : s.entityType === 'festival' ? `/festivals/${s.entitySlug}` : s.entityType === 'event' ? `/events/${s.entitySlug}` : `/pujas?book=${s.entitySlug}`}
+                    className="journey-saved-chip"
+                  >
+                    {s.entityTitle}
+                  </Link>
+                ))}
               </div>
             </div>
           )}
@@ -658,6 +683,24 @@ export function Profile() {
 
       {activeTab === 'settings' && (
         <div className="profile-content-panel">
+          <div className="activity-item-card">
+            <div>
+              <h4 className="activity-meta-title">Devotional Notifications</h4>
+              <p className="activity-meta-sub">Daily nudges, festival reminders & engagement messages. Booking confirmations always reach you.</p>
+            </div>
+            <button
+              className={`appearance-btn notif-toggle ${notificationsOn ? 'active' : ''}`}
+              onClick={async () => {
+                const next = !notificationsOn;
+                setNotificationsOn(next);
+                await updateProfile({ notificationsEnabled: next }).catch(() => setNotificationsOn(!next));
+              }}
+              aria-pressed={notificationsOn}
+            >
+              <span>{notificationsOn ? 'On' : 'Off'}</span>
+            </button>
+          </div>
+
           <div className="activity-item-card appearance-card">
             <div>
               <h4 className="activity-meta-title">Appearance</h4>

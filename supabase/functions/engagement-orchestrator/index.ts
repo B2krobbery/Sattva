@@ -54,8 +54,9 @@ interface Candidate {
 
 async function gatherCandidates(): Promise<Candidate[]> {
   const { data: profiles } = await admin.from('profiles')
-    .select('id, display_name, email, birth_date, created_at')
-    .not('email', 'is', null);
+    .select('id, display_name, email, birth_date, created_at, notifications_enabled')
+    .not('email', 'is', null)
+    .neq('notifications_enabled', false);
   if (!profiles?.length) return [];
 
   const today = new Date().toISOString().slice(0, 10);
