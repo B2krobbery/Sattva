@@ -308,3 +308,7 @@ cd web && npx cap sync android && cd android && ANDROID_HOME=~/Android/Sdk ./gra
   carry `LINK:/route|Label` chips; signed-out asks get a real sign-in prompt.
   Admin gained Activity tab (audit_log). Native platforms now land on Home, not
   the marketing page. Remaining launch gates live in PRATHA-240.
+- **Release v1.1.8 (2026-10-07)**: debug APK `pratha-v1.1.8.apk` on GitHub Releases —
+  versionCode 8 / versionName 1.1.8. Includes Learn/Mantras routes, sadhana streaks,
+  saved temples, search, real panchang, Rishi links, notif opt-out; native shell
+  routes `/` → Home. No emulator pass this cycle.
