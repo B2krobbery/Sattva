@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { X, CheckCircle, Heart, Sparkles, Loader2, AlertCircle } from 'lucide-react';
 import { createDonation, getSevaCampaigns } from '@/lib/api/profile';
 import { useAuth } from '@/features/auth/AuthContext';
+import { redirectToLogin } from '@/lib/auth/redirect';
 
 interface DonationModalProps {
   isOpen: boolean;
@@ -49,7 +50,7 @@ export function DonationModal({
 
     if (!user) {
       onClose();
-      window.location.assign('/login');
+      redirectToLogin(activeCampaign?.id ? { campaign: activeCampaign.id } : undefined);
       return;
     }
     setLoading(true);

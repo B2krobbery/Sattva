@@ -3,6 +3,7 @@ import { X, CheckCircle, Heart, Sparkles, Loader2, AlertCircle } from 'lucide-re
 import type { Animal } from '@/lib/api/gaushala';
 import { createDonation } from '@/lib/api/profile';
 import { useAuth } from '@/features/auth/AuthContext';
+import { redirectToLogin } from '@/lib/auth/redirect';
 
 interface SponsorModalProps {
   animal: Animal | null;
@@ -31,7 +32,7 @@ export function SponsorModal({ animal, isOpen, onClose }: SponsorModalProps) {
     setError(null);
     if (!user) {
       onClose();
-      window.location.assign('/login');
+      redirectToLogin({ sponsor: animal.id });
       return;
     }
     setLoading(true);

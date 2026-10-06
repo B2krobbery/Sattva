@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getAnimals, type Animal } from '@/lib/api/gaushala';
 import { 
@@ -19,6 +19,15 @@ import './AnimalPassport.css';
 export function AnimalPassport() {
   const { id } = useParams<{ id: string }>();
   const [sponsorModalOpen, setSponsorModalOpen] = useState(false);
+
+  // Returning from sign-in with ?sponsor=<id> — reopen the sponsor modal.
+  const [searchParams, setSearchParams] = useSearchParams();
+  useEffect(() => {
+    if (searchParams.get('sponsor') === id) {
+      setSponsorModalOpen(true);
+      setSearchParams((prev) => { prev.delete('sponsor'); return prev; }, { replace: true });
+    }
+  }, [id, searchParams, setSearchParams]);
 
   const { data } = useQuery({
     queryKey: ['animals'],

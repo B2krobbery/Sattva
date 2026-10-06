@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Capacitor } from '@capacitor/core';
 import { App as CapApp } from '@capacitor/app';
@@ -13,19 +13,22 @@ import { Home } from '@/features/home/Home';
 import { Landing } from '@/features/landing/Landing';
 import { Auth } from '@/features/auth/Auth';
 
-import { GaushalaDiscovery } from '@/features/gaushala/GaushalaDiscovery';
-import { AnimalPassport } from '@/features/gaushala/AnimalPassport';
-import { PujaDiscovery } from '@/features/pujas/PujaDiscovery';
-import { SevaExperience } from '@/features/seva/SevaExperience';
-import { Profile } from '@/features/profile/Profile';
-import { Admin } from '@/features/admin/Admin';
-
 import { LoadingScreen } from '@/components/ui/LoadingScreen';
-import { Discover } from '@/features/discover/Discover';
-import { TempleDetail } from '@/features/discover/TempleDetail';
-import { EventDetail } from '@/features/discover/EventDetail';
-import { FestivalDetail } from '@/features/discover/FestivalDetail';
-import { LiveDarshan, LiveDarshanDetail } from '@/features/discover/LiveDarshan';
+
+// Route-level code splitting: admin + secondary routes ship in separate chunks
+// so the landing/first-load bundle stays lean.
+const Discover = React.lazy(() => import('@/features/discover/Discover').then((m) => ({ default: m.Discover })));
+const TempleDetail = React.lazy(() => import('@/features/discover/TempleDetail').then((m) => ({ default: m.TempleDetail })));
+const EventDetail = React.lazy(() => import('@/features/discover/EventDetail').then((m) => ({ default: m.EventDetail })));
+const FestivalDetail = React.lazy(() => import('@/features/discover/FestivalDetail').then((m) => ({ default: m.FestivalDetail })));
+const LiveDarshan = React.lazy(() => import('@/features/discover/LiveDarshan').then((m) => ({ default: m.LiveDarshan })));
+const LiveDarshanDetail = React.lazy(() => import('@/features/discover/LiveDarshan').then((m) => ({ default: m.LiveDarshanDetail })));
+const PujaDiscovery = React.lazy(() => import('@/features/pujas/PujaDiscovery').then((m) => ({ default: m.PujaDiscovery })));
+const GaushalaDiscovery = React.lazy(() => import('@/features/gaushala/GaushalaDiscovery').then((m) => ({ default: m.GaushalaDiscovery })));
+const AnimalPassport = React.lazy(() => import('@/features/gaushala/AnimalPassport').then((m) => ({ default: m.AnimalPassport })));
+const SevaExperience = React.lazy(() => import('@/features/seva/SevaExperience').then((m) => ({ default: m.SevaExperience })));
+const Profile = React.lazy(() => import('@/features/profile/Profile').then((m) => ({ default: m.Profile })));
+const Admin = React.lazy(() => import('@/features/admin/Admin').then((m) => ({ default: m.Admin })));
 
 // Shell wrapper: routes are public; transactional actions prompt for sign-in.
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -34,9 +37,16 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-// Routes that only make sense for a signed-in user.
+// Routes that only make sense for a signed-in user. The requested path is
+// stashed so Auth can return the user after sign-in.
 const RequireAuth = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
+  const location = useLocation();
+  React.useEffect(() => {
+    if (!loading && !user) {
+      try { sessionStorage.setItem('postLoginRedirect', location.pathname + location.search); } catch { /* noop */ }
+    }
+  }, [loading, user, location]);
   if (loading) return <LoadingScreen message="Restoring Sacred Session..." subtext="Connecting to Pratha" />;
   if (!user) return <Navigate to="/login" replace />;
   return <>{children}</>;
@@ -56,6 +66,7 @@ export { QueryClientProvider } from '@tanstack/react-query';
 
 export function PrathaAppContent() {
   return (
+    <React.Suspense fallback={<LoadingScreen message="Opening Pratha..." subtext="Loading the sacred path" />}>
     <Routes>
       <Route path="/login" element={<Auth />} />
       
@@ -85,6 +96,7 @@ export function PrathaAppContent() {
       {/* Fallback route */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    </React.Suspense>
   );
 }
 

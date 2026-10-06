@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
   ArrowRight,
@@ -21,6 +21,16 @@ export function SevaExperience() {
 
   const { data: campaigns } = useQuery({ queryKey: ['seva-campaigns'], queryFn: getSevaCampaigns });
   const { data: welfare } = useQuery({ queryKey: ['welfareStats'], queryFn: getWelfareStats });
+
+  // Returning from sign-in with ?campaign=<id> — reopen that seva's modal.
+  const [searchParams, setSearchParams] = useSearchParams();
+  useEffect(() => {
+    const cid = searchParams.get('campaign');
+    if (!cid || !campaigns) return;
+    const c = campaigns.find((x) => x.id === cid);
+    if (c) { setActiveCampaign(c); setModalOpen(true); }
+    setSearchParams((prev) => { prev.delete('campaign'); return prev; }, { replace: true });
+  }, [campaigns, searchParams, setSearchParams]);
 
   const openSeva = (c?: SevaCampaign) => {
     setActiveCampaign(c ?? null);

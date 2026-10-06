@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getPujas, type Puja } from '@/lib/api/puja';
 import { getProfile } from '@/lib/api/profile';
@@ -23,6 +23,16 @@ export function PujaDiscovery() {
     queryKey: ['pujas'],
     queryFn: () => getPujas(),
   });
+
+  // Returning from sign-in with ?book=<id> — reopen the same puja's modal.
+  const [searchParams, setSearchParams] = useSearchParams();
+  useEffect(() => {
+    const bookId = searchParams.get('book');
+    if (!bookId || !data?.pujas) return;
+    const puja = data.pujas.find((p) => p.id === bookId);
+    if (puja) setActivePuja(puja);
+    setSearchParams((prev) => { prev.delete('book'); return prev; }, { replace: true });
+  }, [data, searchParams, setSearchParams]);
 
   const { user } = useAuth();
   const { data: profileData } = useQuery({

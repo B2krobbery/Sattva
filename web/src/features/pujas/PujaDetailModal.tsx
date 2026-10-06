@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { X, CheckCircle, MapPin, Clock, Flame, User, Sparkles, Loader2, AlertCircle, CalendarDays } from 'lucide-react';
 import { createBooking, type Puja } from '@/lib/api/puja';
 import { useAuth } from '@/features/auth/AuthContext';
+import { redirectToLogin } from '@/lib/auth/redirect';
 import { IMAGES } from '@/lib/images';
 import './PujaDetailModal.css';
 
@@ -78,7 +79,7 @@ export function PujaDetailModal({ puja, onClose }: PujaDetailModalProps) {
     }
     if (!user) {
       onClose();
-      window.location.assign('/login');
+      redirectToLogin({ book: puja.id });
       return;
     }
 
