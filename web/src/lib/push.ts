@@ -42,17 +42,23 @@ export async function registerPushToken(user: User | null): Promise<void> {
     if (perm.receive !== 'granted') return;
     await LocalNotifications.requestPermissions();
 
+    // Listeners must be attached BEFORE register() — FCM can deliver a
+    // cached token synchronously, so attaching after would miss the event
+    // and the token would never reach push_tokens.
+    let registered = false;
+    await PushNotifications.addListener('registration', async ({ value }) => {
+      if (registered) return;
+      registered = true;
+      const { error } = await supabase.from('push_tokens').upsert(
+        { user_id: user.id, token: value, platform: 'android' },
+        { onConflict: 'token' }
+      );
+      if (error) console.warn('[push] token upsert failed:', error.message);
+    });
     await PushNotifications.register();
 
     if (!listenersRegistered) {
       listenersRegistered = true;
-
-      PushNotifications.addListener('registration', async ({ value }) => {
-        await supabase.from('push_tokens').upsert(
-          { user_id: user.id, token: value, platform: 'android', updated_at: new Date().toISOString() },
-          { onConflict: 'token' }
-        );
-      });
 
       PushNotifications.addListener('registrationError', (err) => {
         console.warn('[push] registration error:', err);
