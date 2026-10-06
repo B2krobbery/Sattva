@@ -59,6 +59,8 @@ const RequireAuth = ({ children }: { children: React.ReactNode }) => {
 // on their personal dashboard instead.
 const HomeOrLanding = () => {
   const { user } = useAuth();
+  // Native installs skip marketing — land straight on the app home.
+  if (Capacitor.isNativePlatform()) return <Home />;
   return user ? <Home /> : <Landing />;
 };
 

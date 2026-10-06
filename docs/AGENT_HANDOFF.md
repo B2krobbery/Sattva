@@ -301,3 +301,10 @@ cd web && npx cap sync android && cd android && ANDROID_HOME=~/Android/Sdk ./gra
   node_modules/playwright-core`) + `--no-sandbox` system chromium + networkidle.
 - **Dashboard tasks pending user**: PRATHA-011 Supabase redirect allowlist +
   PRATHA-193 leaked-password toggle; PRATHA-160 Resend domain; PRATHA-042 Razorpay keys.
+- **Ledger pass 2 (2026-10-07)**: added `mantras` + `articles` tables (026/027 seeds),
+  `saved_items` (025), `profiles.notifications_enabled` (024). New routes /mantras,
+  /learn, /learn/:slug; nav extended. `web/src/lib/api/learn.ts` + `panchang.ts`
+  (real Schlyter astronomy — the Home card was hardcoded before). Rishi replies can
+  carry `LINK:/route|Label` chips; signed-out asks get a real sign-in prompt.
+  Admin gained Activity tab (audit_log). Native platforms now land on Home, not
+  the marketing page. Remaining launch gates live in PRATHA-240.

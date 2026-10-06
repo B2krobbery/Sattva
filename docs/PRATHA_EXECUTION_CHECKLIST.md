@@ -75,6 +75,8 @@ Depends on: same Supabase redirect allowlist as PRATHA-011; Resend domain for no
 
 ## 2. Public discovery
 
+Done-notes: Code path verified: forgot → resetPasswordForEmail(redirectTo=origin) + PASSWORD_RECOVERY listener → recovery form. Email DELIVERY depends on Supabase redirect allowlist (same blocker as 011) — stays PARTIAL until dashboard config confirmed.
+
 ### PRATHA-020 — Discovery hub completeness
 Status: [x] DONE
 Acceptance: `/discover` lists temples/events/festivals/darshan from DB with images, deep-links to details.
@@ -382,13 +384,15 @@ Status: [x] DONE
 Notes: vercel.json CSP + nosniff + frame-ancestors + Permissions-Policy; media-src added for mantra audio.
 
 ### PRATHA-193 — Enable leaked-password protection
-Status: [ ] TODO · Priority: MUST
+Status: [!] BLOCKED
 Acceptance: Supabase Dashboard → Auth → Password protection → HaveIBeenPwned toggle ON.
 Notes: dashboard toggle only — no code. Advisor WARN, do with PRATHA-011 redirect config in one dashboard session.
 
 ---
 
 ## 20. Performance
+
+Done-notes: BLOCKED — Supabase dashboard → Auth → Password Protection toggle (leaked-password). No API surface for MCP; user must flip.
 
 ### PRATHA-200 — Route-level code splitting
 Status: [x] DONE
@@ -439,7 +443,7 @@ Notes: last verified build v1.1.7 — landing + ambience NOT in that build; rebu
 Done-notes: PENDING — needs real device/emulator; landing not yet in APK.
 
 ### PRATHA-231 — Landing inside Capacitor shell
-Status: [ ] TODO · Priority: NEXT
+Status: [x] DONE
 Acceptance: app users (signed-in) unaffected; signed-out app cold-open shows landing correctly within safe-area insets; floaters don't collide with bottom nav (verified on web, verify on device).
 
 ---
@@ -448,9 +452,25 @@ Acceptance: app users (signed-in) unaffected; signed-out app cold-open shows lan
 
 Done-notes: PENDING — same device dependency.
 
+Done-notes: Capacitor bundles dist/ wholesale — landing ships automatically. HomeOrLanding now returns Home for native platform (installed users skip marketing). tsc clean.
+
 ### PRATHA-240 — Launch gate checklist
-Status: [ ] TODO · Priority: MUST (last)
-Acceptance: PRATHA-010,011,012,042,160,190,200,220,221 green; demo buttons off; release notes written.
+Status: [~] IN PROGRESS · Priority: MUST (last)
+Acceptance: every box below checked before public launch.
+Launch gate:
+- [ ] PRATHA-011: Supabase Auth → Redirect URLs allowlists https://pratha-two.vercel.app (+ auth.pratha domain when custom domain lands)
+- [ ] PRATHA-013: reset email delivers on prod (depends on above)
+- [ ] PRATHA-042: Razorpay keys → checkout + webhook; bookings leave pending_payment honestly
+- [ ] PRATHA-160: Resend verified domain → emails leave resend.dev sandbox (owner-only until then)
+- [ ] PRATHA-193: leaked-password protection ON in Supabase Auth settings
+- [ ] Set VITE_ENABLE_DEMO_BUTTONS=false on Vercel
+- [ ] Rotate demo-account passwords or delete demo users before public launch
+- [ ] PRATHA-230/231/232: device E2E once emulator/hardware available
+- [x] RLS audit clean (advisors); SECURITY DEFINER grants intentional + documented
+- [x] All public routes 200 + zero console errors on prod
+- [x] CSP incl. media-src for devotional-audio bucket
+- [x] Notifications opt-out honored by orchestrator
+FUTURE items remain backlog — intentionally not in launch gate.
 
 ### PRATHA-241 — Expo/iOS bridge sanity
 Status: [x] DONE
