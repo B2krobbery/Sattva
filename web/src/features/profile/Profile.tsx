@@ -31,9 +31,9 @@ export function Profile() {
   const { user, signOut } = useAuth();
   const themeMode = useThemeMode();
   const [searchParams] = useSearchParams();
-  const initialTab = (searchParams.get('tab') as 'seva' | 'pujas' | 'family' | 'referral' | 'settings') || 'seva';
-  const [activeTab, setActiveTab] = useState<'seva' | 'pujas' | 'family' | 'referral' | 'settings'>(
-    ['seva', 'pujas', 'family', 'referral', 'settings'].includes(initialTab) ? initialTab : 'seva'
+  const initialTab = (searchParams.get('tab') as 'journey' | 'seva' | 'pujas' | 'family' | 'referral' | 'settings') || 'journey';
+  const [activeTab, setActiveTab] = useState<'journey' | 'seva' | 'pujas' | 'family' | 'referral' | 'settings'>(
+    ['journey', 'seva', 'pujas', 'family', 'referral', 'settings'].includes(initialTab) ? initialTab : 'journey'
   );
   const [copiedCode, setCopiedCode] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
@@ -221,7 +221,14 @@ export function Profile() {
 
       {/* Profile Multi-Tab Selector */}
       <div className="profile-nav-tabs hide-scrollbar">
-        <button 
+        <button
+          className={`profile-tab-btn ${activeTab === 'journey' ? 'active' : ''}`}
+          onClick={() => setActiveTab('journey')}
+        >
+          My Journey
+        </button>
+
+        <button
           className={`profile-tab-btn ${activeTab === 'seva' ? 'active' : ''}`}
           onClick={() => setActiveTab('seva')}
         >
@@ -261,6 +268,66 @@ export function Profile() {
       </div>
 
       {/* Tab Panels */}
+      {activeTab === 'journey' && (
+        <div className="profile-content-panel">
+          <div className="journey-grid">
+            {[
+              { label: 'Seva Offered', value: `₹${totalContributions.toLocaleString('en-IN')}`, sub: `${donations.length} contribution${donations.length === 1 ? '' : 's'}` },
+              { label: 'Pujas Booked', value: bookings.length, sub: 'sankalpas in your name' },
+              { label: 'Punya Earned', value: referralStats.punyaPoints, sub: `${referralStats.tierName} · ${referralStats.invitedCount} invited` },
+              { label: 'Sankalpa Family', value: family.length, sub: 'members included in prayers' },
+            ].map((s) => (
+              <div key={s.label} className="journey-tile">
+                <span className="journey-tile-value">{s.value}</span>
+                <span className="journey-tile-label">{s.label}</span>
+                <span className="journey-tile-sub">{s.sub}</span>
+              </div>
+            ))}
+          </div>
+
+          {profile?.nakshatra && (
+            <div className="journey-janma">
+              <Sparkles size={18} className="text-gold" />
+              <div>
+                <b>Janma chart ready</b>
+                <span>Nakshatra {profile.nakshatra} · birth details on file — used for puja recommendations and sankalpa.</span>
+              </div>
+            </div>
+          )}
+
+          <div className="journey-next">
+            <h4>Continue your journey</h4>
+            {!profile?.birthDate && (
+              <button className="journey-nudge" onClick={() => setActiveTab('settings')}>
+                <span>Add your birth details</span>
+                <small>Unlocks janma chart and personalised puja guidance</small>
+              </button>
+            )}
+            {bookings.length === 0 && (
+              <Link to="/pujas" className="journey-nudge">
+                <span>Book your first puja</span>
+                <small>A sankalpa performed in your name at a temple</small>
+              </Link>
+            )}
+            {donations.length === 0 && (
+              <Link to="/seva" className="journey-nudge">
+                <span>Offer your first seva</span>
+                <small>Fodder, medicine and shelter for the rescued herd</small>
+              </Link>
+            )}
+            {family.length === 0 && (
+              <button className="journey-nudge" onClick={() => setActiveTab('family')}>
+                <span>Add your sankalpa family</span>
+                <small>Names invoked together during puja</small>
+              </button>
+            )}
+            {profile?.birthDate && bookings.length > 0 && donations.length > 0 && family.length > 0 && (
+              <p className="journey-complete">Your journey is well underway. Dharma continues — explore live darshan or a festival near you.</p>
+            )}
+          </div>
+        </div>
+      )}
+
       {activeTab === 'seva' && (
         <div className="profile-content-panel">
           {donations.length === 0 ? (

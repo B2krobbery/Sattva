@@ -745,3 +745,28 @@
   .landing-live-dot, .landing-rishi-ring, .landing-mantra-bars.is-on i { animation: none; }
   .landing-tile img, .landing-fest-card img { transition: none; }
 }
+
+/* Intent strip — "what brings you here today" */
+.landing-intents { margin-top: 30px; }
+.landing-intents-label {
+  display: block;
+  font-size: 0.6875rem; font-weight: 700;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: rgba(250, 243, 227, 0.5);
+  margin-bottom: 10px;
+}
+.landing-intents-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.landing-intents-row a, .landing-intents-row button {
+  padding: 9px 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(250, 243, 227, 0.28);
+  color: rgba(250, 243, 227, 0.88);
+  font-size: 0.8125rem; font-weight: 600; font-family: inherit;
+  background: transparent; cursor: pointer;
+  transition: background .18s ease, border-color .18s ease, color .18s ease;
+}
+.landing-intents-row a:hover, .landing-intents-row button:hover {
+  background: rgba(250, 243, 227, 0.12);
+  border-color: #E9C46A;
+  color: #E9C46A;
+}

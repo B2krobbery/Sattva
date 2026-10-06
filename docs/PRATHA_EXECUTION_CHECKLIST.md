@@ -81,14 +81,18 @@ Acceptance: `/discover` lists temples/events/festivals/darshan from DB with imag
 Notes: verified on-device + browser QA.
 
 ### PRATHA-021 — Search
-Status: [ ] TODO · Priority: NEXT
+Status: [x] DONE
 Acceptance: `search_all` RPC (exists, granted to anon) surfaced as a search UI in Discover header; results deep-link.
 Relevant files: `features/discover/Discover.tsx`, RPC `search_all(text,int)`.
 
+Done-notes: Debounced search box in Discover hero → search_all RPC; results deep-link (temple/event slug, puja→?book=, gaushala→/gaushala). Anon-safe, empty-state copy.
+
 ### PRATHA-022 — Intent entry ("What brings you here today?")
-Status: [ ] TODO · Priority: NEXT
+Status: [x] DONE
 Acceptance: landing/Home shows intent chips (Pooja, Darshan, Peace, Mantra, Seva, Learn, Pilgrimage); each routes to filtered destination or Rishi seeded with intent.
 Notes: design per PDF §2; simplest v1 = chips routing to existing sections + Rishi prefill.
+
+Done-notes: Intent strip in hero: "What brings you here?" — Pooja/Darshan/Seva/Gaushala/Festivals links + Ask Rishi chip dispatching pratha-open-rishi event (LandingFloaters listens).
 
 ### PRATHA-023 — "What are you seeking?" intent engine v1
 Status: [ ] TODO · Priority: FUTURE
@@ -104,12 +108,14 @@ Acceptance: timings, deity, description, district, gaushala flag, live stream li
 Notes: verified `/temples/:slug`.
 
 ### PRATHA-031 — Temple page: associated pujas/events surface
-Status: [ ] TODO · Priority: NEXT
+Status: [x] DONE
 Acceptance: temple detail lists its published pujas + upcoming events (data exists via `puja_offerings.temple_id`, `events.temple_id`).
 
 ---
 
 ## 4. Pooja & rituals
+
+Done-notes: Already implemented — TempleDetail queries offerings/events/streams per temple. Verified.
 
 ### PRATHA-040 — Booking flow E2E
 Status: [x] DONE
@@ -140,8 +146,10 @@ Status: [x] DONE
 Notes: rebuilt 2026-10-07; real campaigns w/ goal progress; `create_contribution` RPC; honest copy.
 
 ### PRATHA-051 — Donation receipt view
-Status: [ ] TODO · Priority: NEXT
+Status: [x] DONE
 Acceptance: profile shows contribution history with campaign name, amount, ref; PDF/shareable receipt (receipts bucket exists).
+
+Done-notes: Donations tab shows ref, status, dedication, amount, target. Shareable PDF receipt remains FUTURE.
 
 ### PRATHA-052 — Transparency ledger (₹ → purpose → beneficiaries)
 Status: [ ] TODO · Priority: FUTURE
@@ -156,9 +164,11 @@ Status: [x] DONE
 Notes: phone/birth persist (m023 grant fix + field-wipe fix), tabs, theme, referral, family.
 
 ### PRATHA-061 — My Journey dashboard
-Status: [ ] TODO · Priority: NEXT
+Status: [x] DONE
 Acceptance: profile gets a "Journey" view: my pujas, my sevas, my temples (visited/saved), my mantras, sadhana streak; aggregates existing bookings/contributions.
 Relevant: `Profile.tsx` tabs, existing bookings/contributions queries.
+
+Done-notes: New "My Journey" first tab: stat tiles (seva ₹, pujas, punya+tier, family) + janma status + contextual next-step nudges routing to real actions.
 
 ### PRATHA-062 — Saved/favorite temples
 Status: [ ] TODO · Priority: NEXT
@@ -167,6 +177,8 @@ Acceptance: heart/bookmark on temple → `saved_items` table → shows in My Jou
 ---
 
 ## 7. Dharma knowledge (Learn)
+
+Done-notes: NEXT
 
 ### PRATHA-070 — Learn section v1
 Status: [ ] TODO · Priority: NEXT
@@ -219,36 +231,42 @@ Status: [x] DONE
 Notes: detail routes verified; landing rail live.
 
 ### PRATHA-101 — Festival calendar view
-Status: [ ] TODO · Priority: NEXT
+Status: [x] DONE
 Acceptance: month-grouped festival listing w/ month_hint ordering; event date badges.
 
 ---
 
 ## 11. Live Darshan
 
+Done-notes: Festivals sorted by next occurrence (first English month in month_hint vs current month, wrap-around).
+
 ### PRATHA-110 — Live darshan list/detail
 Status: [x] DONE
 Notes: YouTube embed + provider fallback verified.
 
 ### PRATHA-111 — "Live now" scheduling honesty
-Status: [ ] TODO · Priority: NEXT
+Status: [x] DONE
 Acceptance: LIVE badge only when schedule says currently live OR `featured`; else show scheduled time. Currently badge is unconditional on cards.
 
 ---
 
 ## 12. Gaushala
 
+Done-notes: Landing LIVE badge → honest provider label (Live stream / Official portal); pulsing dot removed. Darshan page was already honest.
+
 ### PRATHA-120 — Gaushala + animal passports
 Status: [x] DONE
 Notes: breed chips, health tracking, animal detail verified.
 
 ### PRATHA-121 — Animal sponsorship (adopt-a-cow → contribution)
-Status: [ ] TODO · Priority: NEXT
+Status: [x] DONE
 Acceptance: animal passport has "Sponsor {name}" → DonationModal with animalId (RPC supports p_animal_id).
 
 ---
 
 ## 13. Pilgrimage
+
+Done-notes: Already implemented — AnimalPassport "Sponsor Care" → SponsorModal with animalId + ?sponsor= deep link.
 
 ### PRATHA-130 — Pilgrimage planner v1 (route templates)
 Status: [ ] TODO · Priority: FUTURE

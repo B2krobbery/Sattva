@@ -1,4 +1,4 @@
-import { useState, useSyncExternalStore } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
 import { RishiChatModal } from '@/features/ai/RishiChatModal';
 import {
@@ -24,6 +24,12 @@ function MantraBars({ active }: { active: boolean }) {
 
 export function LandingFloaters() {
   const [rishiOpen, setRishiOpen] = useState(false);
+  // Other landing elements can open Rishi without prop-drilling.
+  useEffect(() => {
+    const open = () => setRishiOpen(true);
+    window.addEventListener('pratha-open-rishi', open);
+    return () => window.removeEventListener('pratha-open-rishi', open);
+  }, []);
   const on = useSyncExternalStore(subscribe, ambienceOn);
   const [wasEnabled] = useState(() => getAmbiencePref() === 'on');
   const reduce = useReducedMotion();

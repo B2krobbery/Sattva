@@ -120,6 +120,25 @@ export function Landing() {
             </Link>
           </motion.div>
           <AmbienceInvitation />
+          <motion.nav
+            className="landing-intents"
+            aria-label="What brings you here today"
+            initial={reduce ? false : { opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.9, delay: 0.75 }}
+          >
+            <span className="landing-intents-label">What brings you here?</span>
+            <div className="landing-intents-row">
+              <Link to="/pujas">Pooja</Link>
+              <Link to="/darshan">Darshan</Link>
+              <Link to="/seva">Seva</Link>
+              <Link to="/gaushala">Gaushala</Link>
+              <Link to="/discover">Festivals</Link>
+              <button type="button" onClick={() => window.dispatchEvent(new CustomEvent('pratha-open-rishi'))}>
+                Ask Rishi
+              </button>
+            </div>
+          </motion.nav>
         </div>
         <motion.div
           className="landing-scroll-cue"
@@ -305,7 +324,7 @@ export function Landing() {
                 <Link to={`/darshan/${s.id}`} className="landing-stream-card">
                   <div className="landing-stream-img">
                     <img src={getSafeImageUrl(s.templeImage, IMAGES.pujas.templeHero)} alt="" loading="lazy" />
-                    <span className="landing-live-badge"><span className="landing-live-dot" />LIVE</span>
+                    <span className="landing-live-badge">{s.provider === 'youtube' ? 'Live stream' : 'Official portal'}</span>
                   </div>
                   <div className="landing-stream-body">
                     <span className="landing-stream-title">{s.title}</span>

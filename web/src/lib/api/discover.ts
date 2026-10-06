@@ -268,3 +268,35 @@ export function toEmbedUrl(url: string, provider: string): string | null {
   }
   return null;
 }
+
+export interface SearchResult {
+  entityType: 'temple' | 'event' | 'gaushala' | 'puja' | string;
+  id: string;
+  slug?: string;
+  title: string;
+  subtitle?: string;
+  imageUrl?: string;
+}
+
+export function searchResultUrl(r: SearchResult): string {
+  switch (r.entityType) {
+    case 'temple': return `/temples/${r.slug}`;
+    case 'event': return `/events/${r.slug}`;
+    case 'puja': return `/pujas?book=${r.id}`;
+    case 'gaushala': return '/gaushala';
+    default: return '/discover';
+  }
+}
+
+export async function searchAll(q: string): Promise<SearchResult[]> {
+  const { data, error } = await supabase.rpc('search_all', { q, lim: 24 });
+  if (error) throw error;
+  return (data ?? []).map((r: any) => ({
+    entityType: r.entity_type,
+    id: r.id,
+    slug: r.slug || undefined,
+    title: r.title,
+    subtitle: r.subtitle || undefined,
+    imageUrl: r.image_url || undefined,
+  }));
+}
