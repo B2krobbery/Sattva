@@ -256,3 +256,39 @@ export async function toggleSavedItem(item: Omit<SavedItem, 'createdAt'>, curren
   if (error) throw error;
   return true;
 }
+
+// Consecutive-day streak ending today/yesterday (a day still counts while
+// today is unrecorded — the streak isn't broken until tomorrow).
+export async function getSadhanaStreak(): Promise<{ streak: number; todayDone: boolean }> {
+  const since = new Date();
+  since.setDate(since.getDate() - 60);
+  const { data, error } = await supabase
+    .from('sadhana_checkins')
+    .select('for_date')
+    .eq('practice', 'mantra')
+    .gte('for_date', since.toISOString().slice(0, 10))
+    .order('for_date', { ascending: false });
+  if (error) throw error;
+  const days = new Set((data ?? []).map((r: any) => r.for_date as string));
+  const today = new Date().toISOString().slice(0, 10);
+  const todayDone = days.has(today);
+  let streak = 0;
+  const cursor = new Date();
+  if (!todayDone) cursor.setDate(cursor.getDate() - 1); // grace for today
+  while (days.has(cursor.toISOString().slice(0, 10))) {
+    streak++;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  return { streak, todayDone };
+}
+
+export async function checkinSadhana(): Promise<void> {
+  const { data: u } = await supabase.auth.getUser();
+  if (!u.user) throw new Error('not_authenticated');
+  const { error } = await supabase.from('sadhana_checkins').upsert({
+    user_id: u.user.id,
+    for_date: new Date().toISOString().slice(0, 10),
+    practice: 'mantra',
+  });
+  if (error) throw error;
+}

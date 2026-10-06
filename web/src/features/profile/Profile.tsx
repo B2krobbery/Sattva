@@ -20,7 +20,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { useThemeMode, setThemeMode } from '@/lib/theme';
-import { getProfile, updateProfile, uploadAvatar, avatarPublicUrl, getDonations, getFamily, addFamilyMember, getSavedItems, type Donation, type FamilyMember } from '@/lib/api/profile';
+import { getProfile, updateProfile, uploadAvatar, avatarPublicUrl, getDonations, getFamily, addFamilyMember, getSavedItems, getSadhanaStreak, checkinSadhana, type Donation, type FamilyMember } from '@/lib/api/profile';
 import { getBookings, type PujaBooking } from '@/lib/api/puja';
 import { useAuth } from '@/features/auth/AuthContext';
 import { IMAGES } from '@/lib/images';
@@ -83,6 +83,12 @@ export function Profile() {
   const { data: savedItems } = useQuery({
     queryKey: ['saved-items'],
     queryFn: getSavedItems,
+    enabled: !!user,
+  });
+
+  const { data: sadhana, refetch: refetchSadhana } = useQuery({
+    queryKey: ['sadhana-streak'],
+    queryFn: getSadhanaStreak,
     enabled: !!user,
   });
 
@@ -284,6 +290,7 @@ export function Profile() {
               { label: 'Pujas Booked', value: bookings.length, sub: 'sankalpas in your name' },
               { label: 'Punya Earned', value: referralStats.punyaPoints, sub: `${referralStats.tierName} · ${referralStats.invitedCount} invited` },
               { label: 'Sankalpa Family', value: family.length, sub: 'members included in prayers' },
+              { label: 'Sadhana Streak', value: `${sadhana?.streak ?? 0} day${sadhana?.streak === 1 ? '' : 's'}`, sub: sadhana?.todayDone ? 'practiced today' : 'mark today to continue' },
             ].map((s) => (
               <div key={s.label} className="journey-tile">
                 <span className="journey-tile-value">{s.value}</span>
@@ -322,6 +329,15 @@ export function Profile() {
 
           <div className="journey-next">
             <h4>Continue your journey</h4>
+            {!sadhana?.todayDone && (
+              <button
+                className="journey-nudge"
+                onClick={async () => { await checkinSadhana().catch(() => {}); refetchSadhana(); }}
+              >
+                <span>Mark today's sadhana</span>
+                <small>Japa, dhyana, or seva — one tap keeps your streak alive</small>
+              </button>
+            )}
             {!profile?.birthDate && (
               <button className="journey-nudge" onClick={() => setActiveTab('settings')}>
                 <span>Add your birth details</span>

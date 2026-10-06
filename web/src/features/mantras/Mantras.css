@@ -24,3 +24,21 @@
 }
 .mantra-translit { font-size: 0.8125rem; color: var(--color-text-muted); font-style: italic; margin: 0 0 10px; }
 .mantra-meaning { font-size: 0.875rem; color: var(--color-text-secondary); line-height: 1.65; margin: 0; }
+
+.sadhana-checkin {
+  display: flex; align-items: center; justify-content: center; gap: 9px;
+  padding: 14px 20px;
+  border-radius: var(--radius-lg);
+  border: 1px dashed var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-family: inherit; font-size: 0.875rem; font-weight: 600;
+  cursor: pointer;
+  transition: border-color .2s ease, color .2s ease;
+}
+.sadhana-checkin:hover { border-color: var(--color-terracotta); color: var(--color-terracotta); }
+.sadhana-checkin.done {
+  border-style: solid; border-color: rgba(74,124,63,0.35);
+  background: rgba(74,124,63,0.08); color: var(--color-tulsi);
+  cursor: default;
+}

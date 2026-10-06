@@ -209,12 +209,14 @@ Notes: keep scope small — static CMS list + optional audio URL.
 Done-notes: mantras table + /mantras page — devanagari, transliteration, deity, meaning; 5 real mantras seeded.
 
 ### PRATHA-081 — Daily Sadhana streak
-Status: [ ] TODO · Priority: FUTURE
+Status: [x] DONE
 Acceptance: mark today's sadhana done; streak counter in My Journey.
 
 ---
 
 ## 9. AI / Rishi / Dharma Guide
+
+Done-notes: sadhana_checkins table + RLS (own rows), streak calc w/ today-grace, check-in chip on /mantras + tile + nudge in My Journey.
 
 ### PRATHA-090 — Rishi chat
 Status: [x] DONE
