@@ -1,100 +1,157 @@
 import { useState } from 'react';
-import { HeartHandshake, Leaf, ShieldCheck, Activity, Users, ArrowRight } from 'lucide-react';
-import { IMAGES } from '@/lib/images';
+import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import {
+  ArrowRight,
+  HeartHandshake,
+  Leaf,
+  Receipt,
+  ShieldCheck,
+  Sparkles,
+} from 'lucide-react';
+import { IMAGES, getSafeImageUrl } from '@/lib/images';
+import { getSevaCampaigns, type SevaCampaign } from '@/lib/api/profile';
+import { getWelfareStats } from '@/lib/api/gaushala';
 import { DonationModal } from './DonationModal';
-import { motion } from 'motion/react';
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
+import './Seva.css';
 
 export function SevaExperience() {
   const [modalOpen, setModalOpen] = useState(false);
+  const [activeCampaign, setActiveCampaign] = useState<SevaCampaign | null>(null);
 
-  const containerVariants = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.1 } } };
+  const { data: campaigns } = useQuery({ queryKey: ['seva-campaigns'], queryFn: getSevaCampaigns });
+  const { data: welfare } = useQuery({ queryKey: ['welfareStats'], queryFn: getWelfareStats });
+
+  const openSeva = (c?: SevaCampaign) => {
+    setActiveCampaign(c ?? null);
+    setModalOpen(true);
+  };
+
   return (
-    <motion.div variants={containerVariants} className="flex flex-col gap-8 md:gap-12 pb-10">
-      
-      {/* Hero Section */}
-      <motion.section  className="relative rounded-[2rem] overflow-hidden bg-deep text-white p-8 md:p-12 shadow-2xl">
-        <div className="absolute inset-0">
-          <img src={IMAGES.animals.gauri} alt="Kapila Calf" className="w-full h-full object-cover opacity-40" />
-        </div>
-        <div className="absolute inset-0 bg-gradient-to-t from-deep via-deep/75 to-deep/20" />
-        
-        <div className="relative z-10 flex flex-col items-start gap-4">
-          <div className="bg-white/20 border border-white/20 px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-widest flex items-center gap-1.5">
-            <HeartHandshake size={14} /> Sanctuary Seva
-          </div>
-          
-          <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-semibold max-w-2xl leading-tight">
-            Nourish the Divine. Sustain the Sanctuary.
+    <div className="seva-page">
+      {/* ── Hero ── */}
+      <section className="seva-hero">
+        <img src={IMAGES.seva.fodderMonsoon} alt="" className="seva-hero-img" />
+        <div className="seva-hero-veil" />
+        <div className="seva-hero-inner">
+          <span className="seva-eyebrow"><HeartHandshake size={13} /> Gau Seva</span>
+          <h1 className="seva-hero-title">
+            Nourish the Divine.<br />Sustain the Sanctuary.
           </h1>
-          <p className="text-white/80 text-lg max-w-xl leading-relaxed mb-4">
-            Your monthly contribution directly provides green fodder, medical supplies, and shelter for over 450 rescued indigenous cows at our Vrindavan sanctum.
+          <p className="seva-hero-sub">
+            Every offering becomes green fodder, medicine, and shelter —
+            reaching the rescued herd directly, without middlemen.
           </p>
-          
-          <Button onClick={() => setModalOpen(true)} className="bg-white text-deep hover:bg-white/90 rounded-full px-8 py-6 text-[15px] font-bold  flex items-center gap-2 group">
-            Sponsor Green Fodder <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-          </Button>
+          {!!welfare?.totalRescued && (
+            <div className="seva-hero-stat">
+              <span className="seva-hero-stat-num">{welfare.totalRescued}</span>
+              <span className="seva-hero-stat-cap">souls in sanctuary, each with a name</span>
+            </div>
+          )}
+          <div className="seva-hero-actions">
+            <button className="seva-cta-primary" onClick={() => openSeva()}>
+              <Sparkles size={16} />
+              <span>Offer Seva</span>
+            </button>
+            <Link to="/gaushala" className="seva-cta-ghost">
+              <span>Meet the herd first</span>
+              <ArrowRight size={15} />
+            </Link>
+          </div>
         </div>
-      </motion.section>
+      </section>
 
-      {/* Impact Stats */}
-      <motion.section  className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* ── The journey of an offering ── */}
+      <section className="seva-flow">
         {[
-          { icon: Leaf, title: 'Fresh Green Fodder', desc: 'Sourced daily from local organic farmers to ensure optimal nutrition.', val: '1,200kg Daily' },
-          { icon: Activity, title: 'Medical Care', desc: '24/7 on-site veterinary support for injured and elderly cows.', val: '45+ Treated/Wk' },
-          { icon: Users, title: 'Community', desc: 'Providing livelihood to local Brajwasi caretakers and farmers.', val: '12 Caretakers' },
-        ].map((stat, i) => (
-          <Card key={i} className="p-6 md:p-8 flex flex-col gap-4 border border-border shadow-none bg-surface">
-            <div className="w-12 h-12 rounded-full bg-tulsi-light text-tulsi flex items-center justify-center">
-              <stat.icon size={24} />
-            </div>
-            <div>
-              <h3 className="font-serif text-2xl font-bold text-text-primary mb-1">{stat.val}</h3>
-              <h4 className="font-semibold text-[15px] text-text-primary mb-2">{stat.title}</h4>
-              <p className="text-sm text-text-secondary leading-relaxed">{stat.desc}</p>
-            </div>
-          </Card>
+          { icon: Sparkles, title: 'You offer', desc: 'Choose a seva and a dedication — a name, a memory, a prayer.' },
+          { icon: Receipt, title: 'It is recorded', desc: 'Your contribution enters your devotee profile with a reference and receipt.' },
+          { icon: Leaf, title: 'It becomes care', desc: 'Fodder, medicine and shelter reach the herd — directly, without middlemen.' },
+        ].map((s, i) => (
+          <div key={i} className="seva-flow-step">
+            <span className="seva-flow-num">{i + 1}</span>
+            <div className="seva-flow-icon"><s.icon size={18} /></div>
+            <h3>{s.title}</h3>
+            <p>{s.desc}</p>
+          </div>
         ))}
-      </motion.section>
+      </section>
 
-      {/* Seva Packages */}
-      <motion.section  className="flex flex-col gap-6">
-        <div className="flex flex-col items-center text-center gap-2 mb-2">
-          <h2 className="font-serif text-3xl font-semibold text-text-primary">Choose Your Seva</h2>
-          <p className="text-text-secondary">Select a contribution that resonates with your devotion.</p>
+      {/* ── Live campaigns ── */}
+      <section className="seva-campaigns">
+        <div className="seva-campaigns-head">
+          <span className="seva-eyebrow-dark">Live Sevas</span>
+          <h2>Choose where your devotion lands.</h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            { name: '1 Day Fodder Seva', price: 1100, desc: 'Provide fresh green fodder and jaggery to 11 cows for a day.', icon: Leaf },
-            { name: 'Medical Seva', price: 2100, desc: 'Support the medical treatment of injured or elderly cows.', icon: Activity },
-            { name: '1 Month Adoption', price: 5100, desc: 'Take complete responsibility for one cow for an entire month.', icon: ShieldCheck, featured: true },
-          ].map((pkg, i) => (
-            <Card key={i} className={`relative flex flex-col p-6 md:p-8 transition-transform hover:-translate-y-1 hover: ${pkg.featured ? 'border-terracotta shadow-lg ring-1 ring-terracotta' : 'border-border'}`}>
-              {pkg.featured && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-terracotta text-white px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-widest">
-                  Most Preferred
+        <div className="seva-campaign-grid">
+          {(campaigns ?? []).map((c) => {
+            const pct = c.goalRupees && c.goalRupees > 0
+              ? Math.min(100, Math.round(((c.raisedRupees ?? 0) / c.goalRupees) * 100))
+              : null;
+            return (
+              <article key={c.id} className="seva-campaign-card">
+                <div className="seva-campaign-img">
+                  <img src={getSafeImageUrl(c.imageUrl, IMAGES.seva.nourishment)} alt="" loading="lazy" />
                 </div>
-              )}
-              <div className={`w-12 h-12 rounded-full mb-4 flex items-center justify-center ${pkg.featured ? 'bg-terracotta-light text-terracotta' : 'bg-surface-subtle text-text-secondary'}`}>
-                <pkg.icon size={24} />
-              </div>
-              <h3 className="font-serif text-xl font-semibold text-text-primary mb-2">{pkg.name}</h3>
-              <p className="text-sm text-text-secondary leading-relaxed flex-1 mb-6">{pkg.desc}</p>
-              
-              <div className="flex items-center justify-between mt-auto">
-                <span className="font-serif font-bold text-2xl text-text-primary">₹{pkg.price}</span>
-                <Button onClick={() => setModalOpen(true)} variant={pkg.featured ? 'default' : 'outline'} className="rounded-full">
-                  Donate
-                </Button>
-              </div>
-            </Card>
-          ))}
+                <div className="seva-campaign-body">
+                  <h3>{c.title}</h3>
+                  {c.description && <p>{c.description}</p>}
+                  {c.goalRupees ? (
+                    <div className="seva-goal">
+                      <div className="seva-goal-bar">
+                        <div className="seva-goal-fill" style={{ width: `${pct ?? 0}%` }} />
+                      </div>
+                      <div className="seva-goal-meta">
+                        <span>₹{(c.raisedRupees ?? 0).toLocaleString('en-IN')} offered</span>
+                        <span>of ₹{c.goalRupees.toLocaleString('en-IN')}</span>
+                      </div>
+                    </div>
+                  ) : null}
+                  <button className="seva-card-cta" onClick={() => openSeva(c)}>
+                    <span>Offer Seva</span>
+                    <ArrowRight size={15} />
+                  </button>
+                </div>
+              </article>
+            );
+          })}
+          {(!campaigns || campaigns.length === 0) && (
+            <p className="seva-empty">New sevas are being prepared. You can still offer a general contribution below.</p>
+          )}
         </div>
-      </motion.section>
+      </section>
 
-      <DonationModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
-    </motion.div>
+      {/* ── Trust ── */}
+      <section className="seva-trust">
+        <div className="seva-trust-item">
+          <ShieldCheck size={20} />
+          <div>
+            <b>Direct care allocation</b>
+            <span>Offerings fund fodder, medicine and shelter — nothing else.</span>
+          </div>
+        </div>
+        <div className="seva-trust-item">
+          <Receipt size={20} />
+          <div>
+            <b>Every offering recorded</b>
+            <span>Reference + dedication stored in your devotee profile.</span>
+          </div>
+        </div>
+        <div className="seva-trust-item">
+          <HeartHandshake size={20} />
+          <div>
+            <b>Meet who you feed</b>
+            <span>Each cow has a passport — name, breed, and care story.</span>
+          </div>
+        </div>
+      </section>
+
+      <DonationModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        defaultInitiative={activeCampaign?.id}
+      />
+    </div>
   );
 }

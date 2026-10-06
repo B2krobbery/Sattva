@@ -284,3 +284,9 @@ cd web && npx cap sync android && cd android && ANDROID_HOME=~/Android/Sdk ./gra
   targets 0.32 volume, 2.8s fade-in, suspends/resumes on tab visibility, all activation
   paths are user gestures (mobile-autoplay-safe). RishiChatModal header shows a
   "Begin with the Gayatri Mantra" chip when ambience is off.
+- **Seva page rebuild (2026-10-07)**: `/seva` rewritten to landing art direction — dark
+  fodder-monsoon hero (explicit cream title fixes light-theme invisible-h1 bug where the
+  global `h1 {color: text-primary}` overrode inherited white), real `seva_campaigns` cards
+  with goal progress + per-campaign DonationModal preselect, "journey of an offering" steps,
+  honest trust strip. Removed ALL fabricated stats (450 cows / 1200kg / 45 treated) — only
+  `welfare_stats` real numbers now.

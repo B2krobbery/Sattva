@@ -1,175 +1,222 @@
+/* ═══ SEVA — sanctuary giving, in the landing's editorial voice ═══ */
+
 .seva-page {
   display: flex;
   flex-direction: column;
-  gap: 28px;
-  padding: 16px 0 36px;
+  gap: clamp(40px, 6vw, 72px);
+  padding-bottom: 40px;
 }
 
-/* Seva Editorial Hero */
-.seva-hero-banner {
-  background: linear-gradient(135deg, #2A1810 0%, #17110C 100%);
-  border: 1px solid rgba(233, 196, 106, 0.2);
-  border-radius: var(--radius-xl);
-  padding: 28px 24px;
-  color: #FFFFFF;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  box-shadow: var(--shadow-sm);
-}
-
-.seva-hero-banner h1 {
-  color: #FFFFFF;
-  font-size: 1.75rem;
-}
-
-.seva-hero-banner p {
-  color: rgba(255, 255, 255, 0.85);
-  font-size: 0.875rem;
-  max-width: 600px;
-  line-height: 1.55;
-}
-
-/* Seva Initiatives Grid */
-.seva-initiatives-list {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.seva-card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
+/* ── Hero ── */
+.seva-hero {
+  position: relative;
   border-radius: var(--radius-xl);
   overflow: hidden;
-  box-shadow: var(--shadow-sm);
+  min-height: clamp(380px, 55vh, 520px);
   display: flex;
-  flex-direction: column;
-  transition: all 0.25s ease;
+  align-items: flex-end;
+  isolation: isolate;
 }
-
-@media (min-width: 768px) {
-  .seva-card {
-    flex-direction: row;
-  }
+.seva-hero-img {
+  position: absolute; inset: 0; z-index: -1;
+  width: 100%; height: 100%;
+  object-fit: cover; object-position: center 40%;
 }
-
-.seva-card:hover {
-  transform: translateY(-2px);
-  border-color: var(--color-gold);
-  box-shadow: var(--shadow-md);
+.seva-hero-veil {
+  position: absolute; inset: 0;
+  background:
+    linear-gradient(180deg, rgba(24,12,8,0.25) 0%, rgba(24,12,8,0.05) 40%, rgba(40,13,10,0.78) 82%, rgba(40,13,10,0.94) 100%),
+    radial-gradient(100% 55% at 30% 100%, rgba(107,29,22,0.4), transparent 70%);
 }
-
-.seva-card-img-box {
-  position: relative;
-  width: 100%;
-  height: 200px;
+.seva-hero-inner {
+  padding: clamp(28px, 5vw, 56px);
+  color: var(--color-cream);
+  max-width: 640px;
 }
-
-@media (min-width: 768px) {
-  .seva-card-img-box {
-    width: 38%;
-    height: auto;
-  }
+.seva-eyebrow {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 0.6875rem; font-weight: 700;
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: #E9C46A;
+  border: 1px solid rgba(233, 196, 106, 0.4);
+  background: rgba(40, 13, 10, 0.4);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  padding: 6px 14px;
+  border-radius: 999px;
+  margin-bottom: 18px;
 }
-
-.seva-card-img-box img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.seva-card-content {
-  padding: 22px;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.seva-card-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.seva-card-title {
+.seva-hero-title {
   font-family: var(--font-family-serif);
-  font-size: 1.25rem;
-  color: var(--color-text-primary);
+  font-size: clamp(2rem, 5vw, 3.25rem);
+  line-height: 1.1;
+  color: var(--color-cream); /* explicit — never inherits dark text */
+  margin: 0 0 16px;
 }
-
-.seva-price-pill {
-  background: var(--color-gold-light);
-  color: var(--color-text-gold);
-  border: 1px solid rgba(184, 134, 11, 0.3);
-  padding: 4px 12px;
-  border-radius: var(--radius-full);
-  font-size: 0.8125rem;
-  font-weight: 700;
-  white-space: nowrap;
+.seva-hero-sub {
+  font-size: clamp(0.9375rem, 1.4vw, 1.0625rem);
+  line-height: 1.65;
+  color: rgba(250, 243, 227, 0.82);
+  margin: 0 0 26px;
+  max-width: 48ch;
 }
-
-.seva-card-desc {
-  font-size: 0.8125rem;
-  color: var(--color-text-secondary);
-  line-height: 1.5;
+.seva-hero-stat {
+  display: flex; align-items: baseline; gap: 10px;
+  margin-bottom: 26px;
 }
-
-.seva-card-footer {
-  margin-top: auto;
-  padding-top: 14px;
-  border-top: 1px solid var(--color-border-subtle);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+.seva-hero-stat-num {
+  font-family: var(--font-family-serif);
+  font-size: 2.25rem; font-weight: 700; line-height: 1;
+  color: #E9C46A;
 }
+.seva-hero-stat-cap { font-size: 0.8125rem; color: rgba(250, 243, 227, 0.7); }
+.seva-hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
 
-/* Trust & Transparency Guarantee */
-.trust-guarantee-panel {
-  background: var(--color-surface-subtle);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-xl);
-  padding: 24px;
+.seva-cta-primary {
+  display: inline-flex; align-items: center; gap: 9px;
+  padding: 14px 28px;
+  background: var(--color-saffron);
+  color: #381310;
+  font-weight: 700; font-size: 0.9375rem;
+  border-radius: 12px;
+  border: none; cursor: pointer;
+  box-shadow: 0 6px 24px rgba(232, 137, 43, 0.35);
+  transition: transform .18s ease, background .18s ease;
+}
+.seva-cta-primary:hover { transform: translateY(-2px); background: #f49a3e; }
+.seva-cta-ghost {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 14px 24px;
+  border-radius: 12px;
+  border: 1px solid rgba(250, 243, 227, 0.35);
+  background: rgba(250, 243, 227, 0.08);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  color: var(--color-cream);
+  font-weight: 600; font-size: 0.9375rem;
+  transition: background .18s ease, border-color .18s ease;
+}
+.seva-cta-ghost:hover { background: rgba(250,243,227,0.16); border-color: rgba(250,243,227,0.55); }
+
+/* ── Journey of an offering ── */
+.seva-flow {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 18px;
+  gap: 14px;
+  max-width: 1100px;
 }
+@media (min-width: 720px) { .seva-flow { grid-template-columns: repeat(3, 1fr); } }
 
-@media (min-width: 640px) {
-  .trust-guarantee-panel {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-.trust-item {
-  display: flex;
-  gap: 12px;
-}
-
-.trust-icon-box {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
+.seva-flow-step {
+  position: relative;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-tulsi);
-  flex-shrink: 0;
+  border-radius: var(--radius-lg);
+  padding: 24px 22px 22px;
+}
+.seva-flow-num {
+  position: absolute; top: 16px; right: 18px;
+  font-family: var(--font-family-serif);
+  font-size: 2rem; font-weight: 700;
+  color: var(--color-border);
+  line-height: 1;
+}
+.seva-flow-icon {
+  width: 42px; height: 42px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 12px;
+  background: var(--color-tulsi-light); color: var(--color-tulsi);
+  margin-bottom: 14px;
+}
+.seva-flow-step h3 { font-family: var(--font-family-serif); font-size: 1.125rem; margin: 0 0 6px; }
+.seva-flow-step p { font-size: 0.8125rem; line-height: 1.55; color: var(--color-text-secondary); margin: 0; }
+
+/* ── Campaigns ── */
+.seva-campaigns-head { margin-bottom: 24px; }
+.seva-eyebrow-dark {
+  display: block;
+  font-size: 0.6875rem; font-weight: 700;
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--color-terracotta);
+  margin-bottom: 8px;
+}
+.seva-campaigns-head h2 {
+  font-family: var(--font-family-serif);
+  font-size: clamp(1.5rem, 3.5vw, 2.25rem);
+  margin: 0;
+}
+.seva-campaign-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: 18px;
+}
+.seva-campaign-card {
+  display: flex; flex-direction: column;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+}
+.seva-campaign-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--color-gold); }
+.seva-campaign-img { aspect-ratio: 16/9; overflow: hidden; }
+.seva-campaign-img img { width: 100%; height: 100%; object-fit: cover; }
+.seva-campaign-body { padding: 20px 22px 22px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+.seva-campaign-body h3 { font-family: var(--font-family-serif); font-size: 1.25rem; margin: 0; }
+.seva-campaign-body > p {
+  font-size: 0.8125rem; line-height: 1.55; color: var(--color-text-secondary); margin: 0; flex: 1;
 }
 
-.trust-text-title {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--color-text-primary);
-  margin-bottom: 2px;
+.seva-goal { margin-top: 4px; }
+.seva-goal-bar {
+  height: 6px; border-radius: 4px;
+  background: var(--color-surface-subtle);
+  overflow: hidden;
+}
+.seva-goal-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-tulsi), var(--color-gold));
+  border-radius: 4px;
+  min-width: 0;
+}
+.seva-goal-meta {
+  display: flex; justify-content: space-between;
+  font-size: 0.6875rem; color: var(--color-text-muted);
+  margin-top: 6px;
 }
 
-.trust-text-desc {
-  font-size: 0.75rem;
-  color: var(--color-text-muted);
-  line-height: 1.4;
+.seva-card-cta {
+  display: inline-flex; align-items: center; gap: 7px;
+  margin-top: 6px;
+  align-self: flex-start;
+  padding: 10px 20px;
+  background: var(--color-maroon);
+  color: var(--color-cream);
+  font-weight: 600; font-size: 0.8125rem;
+  border-radius: 10px;
+  border: none; cursor: pointer;
+  transition: background .18s ease, transform .18s ease;
 }
+.seva-card-cta:hover { background: #6B241A; transform: translateX(2px); }
+
+.seva-empty { font-size: 0.875rem; color: var(--color-text-muted); padding: 12px 0; }
+
+/* ── Trust strip ── */
+.seva-trust {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1px;
+  background: var(--color-border);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+@media (min-width: 720px) { .seva-trust { grid-template-columns: repeat(3, 1fr); } }
+.seva-trust-item {
+  display: flex; gap: 14px; align-items: flex-start;
+  background: var(--color-surface);
+  padding: 22px;
+}
+.seva-trust-item svg { color: var(--color-tulsi); flex-shrink: 0; margin-top: 2px; }
+.seva-trust-item b { display: block; font-size: 0.875rem; color: var(--color-text-primary); margin-bottom: 3px; }
+.seva-trust-item span { font-size: 0.75rem; line-height: 1.5; color: var(--color-text-muted); }
