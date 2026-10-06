@@ -290,3 +290,14 @@ cd web && npx cap sync android && cd android && ANDROID_HOME=~/Android/Sdk ./gra
   with goal progress + per-campaign DonationModal preselect, "journey of an offering" steps,
   honest trust strip. Removed ALL fabricated stats (450 cows / 1200kg / 45 treated) — only
   `welfare_stats` real numbers now.
+- **Execution ledger (2026-10-07)**: `docs/PRATHA_EXECUTION_CHECKLIST.md` is the canonical
+  task queue (vision-PDF aligned). Executed this session: PRATHA-010 (auth context
+  preservation — `redirectToLogin` + `?book/?campaign/?sponsor` deep-links reopen modals
+  post-sign-in), PRATHA-200 (all routes lazy; Admin own chunk), PRATHA-041 (honest
+  pending_payment copy verified), PRATHA-043 (puja deep-link), PRATHA-190 (RLS advisors
+  clean), PRATHA-220/221 (prod sweep, zero console errors).
+- **QA tooling**: `chromium --headless --screenshot --virtual-time-budget` races real
+  network → false blanks. Use playwright-core (`/opt/devin-desktop/resources/app/
+  node_modules/playwright-core`) + `--no-sandbox` system chromium + networkidle.
+- **Dashboard tasks pending user**: PRATHA-011 Supabase redirect allowlist +
+  PRATHA-193 leaked-password toggle; PRATHA-160 Resend domain; PRATHA-042 Razorpay keys.

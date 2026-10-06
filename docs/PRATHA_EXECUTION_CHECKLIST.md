@@ -369,13 +369,15 @@ Notes: landing floaters/pills labeled; check modals focus-trap (Radix Dialog doe
 ## 22. Web production QA
 
 ### PRATHA-220 — Full prod route sweep
-Status: [ ] TODO · Priority: MUST
+Status: [x] DONE
 Acceptance: every public route on pratha-two renders, zero console errors, no 4xx images, mobile 390px + desktop 1440px.
 Test: headless chromium screenshots per route + console log grep.
+Notes: playwright-core from Devin desktop install + system chromium. All routes (/, /discover, /pujas, /pujas?book=, /temples/:slug, /darshan, /gaushala, /gaushala/animal/:id, /seva, /login, /festivals/:slug, /events) → 200 + zero console errors on mobile + desktop. NOTE: `chromium --headless --screenshot --virtual-time-budget` races real network → false "blank" captures; use playwright with networkidle for QA.
 
 ### PRATHA-221 — Signed-out action gates
-Status: [ ] TODO · Priority: MUST
+Status: [x] DONE
 Acceptance: donate/book while signed-out → login prompt → return (depends PRATHA-010).
+Notes: prod-verified — `/pujas?book=<id>` opens booking modal signed-out, footer reads "Sign in to Book", click stashes return URL → post-login returns + reopens. Same pattern for ?campaign=/​?sponsor=.
 
 ---
 
