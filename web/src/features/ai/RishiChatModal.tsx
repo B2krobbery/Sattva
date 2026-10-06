@@ -1,9 +1,15 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useSyncExternalStore } from 'react';
 import { X, Send, Sparkles, Loader2 } from 'lucide-react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { AnimatePresence, motion } from 'motion/react';
 import { askRishi } from '@/lib/api/ai';
+import { ambienceOn, startAmbience } from '@/features/landing/ambience';
 import { cn } from '@/lib/utils';
+
+function subscribeAmbience(cb: () => void) {
+  window.addEventListener('pratha-ambience', cb);
+  return () => window.removeEventListener('pratha-ambience', cb);
+}
 
 interface RishiChatModalProps {
   isOpen: boolean;
@@ -17,6 +23,7 @@ interface Message {
 }
 
 export function RishiChatModal({ isOpen, onClose, initialPrompt }: RishiChatModalProps) {
+  const mantraOn = useSyncExternalStore(subscribeAmbience, ambienceOn);
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
@@ -102,6 +109,14 @@ export function RishiChatModal({ isOpen, onClose, initialPrompt }: RishiChatModa
                       <Dialog.Description className="text-xs text-text-secondary">
                         Active • Ancient Wisdom & Seva
                       </Dialog.Description>
+                      {!mantraOn && (
+                        <button
+                          className="mt-1 inline-flex items-center gap-1.5 text-[11px] font-semibold text-gold hover:text-terracotta transition-colors"
+                          onClick={startAmbience}
+                        >
+                          ॐ Begin with the Gayatri Mantra
+                        </button>
+                      )}
                     </div>
                   </div>
                   <Dialog.Close asChild>

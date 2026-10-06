@@ -18,6 +18,7 @@ import { getPujas } from '@/lib/api/puja';
 import { getWelfareStats, getAnimals } from '@/lib/api/gaushala';
 import { IMAGES, getSafeImageUrl } from '@/lib/images';
 import { LandingFloaters } from './LandingFloaters';
+import { AmbienceInvitation } from './AmbienceInvitation';
 import './Landing.css';
 
 const fmtDate = (iso?: string) => {
@@ -118,6 +119,7 @@ export function Landing() {
               <span>Explore Pujas</span>
             </Link>
           </motion.div>
+          <AmbienceInvitation />
         </div>
         <motion.div
           className="landing-scroll-cue"

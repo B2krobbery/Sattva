@@ -1,40 +1,45 @@
-import { useEffect, useState } from 'react';
-import { Music, VolumeX } from 'lucide-react';
+import { useState, useSyncExternalStore } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
 import { RishiChatModal } from '@/features/ai/RishiChatModal';
-import { ambienceOn, startAmbience, stopAmbience } from './ambience';
+import {
+  ambienceOn,
+  getAmbiencePref,
+  toggleAmbience,
+} from './ambience';
+
+function subscribe(cb: () => void) {
+  window.addEventListener('pratha-ambience', cb);
+  return () => window.removeEventListener('pratha-ambience', cb);
+}
+
+// Tiny animated-equalizer medallion — reads as "sacred sound is breathing"
+// rather than a generic speaker toggle.
+function MantraBars({ active }: { active: boolean }) {
+  return (
+    <span className={`landing-mantra-bars ${active ? 'is-on' : ''}`} aria-hidden>
+      <i /><i /><i />
+    </span>
+  );
+}
 
 export function LandingFloaters() {
   const [rishiOpen, setRishiOpen] = useState(false);
-  const [ambience, setAmbience] = useState(false);
+  const on = useSyncExternalStore(subscribe, ambienceOn);
+  const [wasEnabled] = useState(() => getAmbiencePref() === 'on');
   const reduce = useReducedMotion();
-
-  // If the user navigates away mid-drone, silence it with the page.
-  useEffect(() => () => { if (ambienceOn()) stopAmbience(); }, []);
-
-  const toggleAmbience = () => {
-    if (ambience) {
-      stopAmbience();
-      setAmbience(false);
-    } else {
-      startAmbience();
-      setAmbience(true);
-    }
-  };
 
   return (
     <>
       <div className="landing-floaters">
-        {/* Sacred ambience — off by default, one intentional tap to enable */}
         <motion.button
-          className={`landing-floater landing-floater--ambience ${ambience ? 'is-on' : ''}`}
+          className={`landing-floater landing-floater--mantra ${on ? 'is-on' : ''} ${wasEnabled && !on ? 'was-on' : ''}`}
           onClick={toggleAmbience}
-          aria-label={ambience ? 'Turn off the Gayatri Mantra' : 'Play the Gayatri Mantra softly'}
-          aria-pressed={ambience}
-          title={ambience ? 'Silence the Gayatri Mantra' : 'Gayatri Mantra ambience'}
+          aria-label={on ? 'Quiet the Gayatri Mantra' : 'Play the Gayatri Mantra softly'}
+          aria-pressed={on}
+          title={on ? 'Quiet the mantra' : 'Gayatri Mantra ambience'}
           whileTap={reduce ? {} : { scale: 0.92 }}
         >
-          {ambience ? <Music size={16} /> : <VolumeX size={16} />}
+          <MantraBars active={on} />
         </motion.button>
 
         {/* Rishi — the AI Vedic guide */}

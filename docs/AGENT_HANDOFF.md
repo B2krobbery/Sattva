@@ -276,3 +276,11 @@ cd web && npx cap sync android && cd android && ANDROID_HOME=~/Android/Sdk ./gra
   bucket (`gayatri-mantra.mp3`, migration `devotional_audio_bucket`: public read, admin-only
   write, audio mimes, 8MB cap). `ambience.ts` streams it with RAF volume fades; vercel.json CSP
   gained `media-src https://*.supabase.co`. Local copy removed from `public/`.
+- **Ambience UX redesign (2026-10-07)**: replaced the generic speaker toggle with an
+  intentional-activation flow — `AmbienceInvitation` pill in the hero ("Enter with the
+  Gayatri Mantra") appears once on first visit only (pref === null); tap starts the chant,
+  × dismisses permanently. Persistent control is a maroon medallion with breathing
+  equalizer bars (not a speaker icon). `ambience.ts` persists `pratha:ambience` = on|off,
+  targets 0.32 volume, 2.8s fade-in, suspends/resumes on tab visibility, all activation
+  paths are user gestures (mobile-autoplay-safe). RishiChatModal header shows a
+  "Begin with the Gayatri Mantra" chip when ambience is off.
