@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Sparkles } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { getProfile, updateProfile } from '@/lib/api/profile';
+import { sendEngagementEmail } from '@/lib/referral';
 
 // "Maybe later" snoozes for 7 days, not forever — profile gaps resurface.
 const DISMISS_KEY = 'pratha-janma-dismissed';
@@ -42,6 +43,8 @@ export function BirthDetailsPrompt() {
       await updateProfile({ birthDate: dob, birthTime: tob, birthPlace: pob, displayName: editName.trim() || undefined });
       await queryClient.invalidateQueries({ queryKey: ['profile'] });
       await queryClient.invalidateQueries({ queryKey: ['janma-chart'] });
+      // celebrate: in-app inbox + push + email via notify-send
+      sendEngagementEmail('janma_ready');
       setDismissed(true);
     } finally {
       setSaving(false);

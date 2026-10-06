@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { Bell, Check } from 'lucide-react';
@@ -76,10 +77,14 @@ export function NotificationBell({ openUp = false }: { openUp?: boolean }) {
         )}
       </motion.button>
 
-      <AnimatePresence>
-        {open && (
-          <>
-            <button
+      {/* Portal to body — the mobile header uses backdrop-blur, which makes
+          it a containing block for `fixed` descendants and clips off-screen. */}
+      {typeof document !== 'undefined' &&
+        createPortal(
+          <AnimatePresence>
+            {open && (
+              <>
+                <button
               className="fixed inset-0 z-40 cursor-default"
               onClick={() => setOpen(false)}
               aria-label="Close notifications"
@@ -89,8 +94,10 @@ export function NotificationBell({ openUp = false }: { openUp?: boolean }) {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 6, scale: 0.97 }}
               className={cn(
-                'absolute right-0 z-50 w-80 max-h-[420px] overflow-y-auto rounded-2xl bg-surface border border-border-subtle shadow-xl',
-                openUp ? 'bottom-10' : 'top-10'
+                // Mobile: fixed bottom sheet, viewport-safe. sm+: anchored dropdown.
+                'fixed inset-x-4 bottom-4 top-auto z-50 max-h-[60dvh] overflow-y-auto rounded-2xl bg-surface border border-border-subtle shadow-xl',
+                'sm:absolute sm:inset-auto sm:right-0 sm:w-80 sm:max-h-[420px]',
+                openUp ? 'sm:bottom-10' : 'sm:top-10'
               )}
             >
               <div className="sticky top-0 bg-surface/95 backdrop-blur px-4 py-3 border-b border-border-subtle flex items-center justify-between">
@@ -130,9 +137,11 @@ export function NotificationBell({ openUp = false }: { openUp?: boolean }) {
                 </button>
               ))}
             </motion.div>
-          </>
+              </>
+            )}
+          </AnimatePresence>,
+          document.body
         )}
-      </AnimatePresence>
     </div>
   );
 }

@@ -84,6 +84,9 @@
   border-radius: var(--radius-full);
   padding: 4px;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  touch-action: pan-x;
 }
 
 .profile-tab-btn {

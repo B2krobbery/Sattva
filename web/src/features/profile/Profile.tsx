@@ -24,7 +24,7 @@ import { getProfile, updateProfile, uploadAvatar, avatarPublicUrl, getDonations,
 import { getBookings, type PujaBooking } from '@/lib/api/puja';
 import { useAuth } from '@/features/auth/AuthContext';
 import { IMAGES } from '@/lib/images';
-import { ensureReferralCode, generateReferralCode, getReferralLink, getReferralShareMessage, getReferralStats, getReferralStatsServer } from '@/lib/referral';
+import { ensureReferralCode, generateReferralCode, getReferralLink, getReferralShareMessage, getReferralStats, getReferralStatsServer, sendEngagementEmail } from '@/lib/referral';
 import './Profile.css';
 
 export function Profile() {
@@ -755,6 +755,7 @@ export function Profile() {
               onClick={async () => {
                 await updateProfile({ birthDate, birthTime, birthPlace });
                 setBirthSaved(true);
+                sendEngagementEmail('janma_ready');
               }}
             >
               {birthSaved ? 'Saved — see Pujas for your recommendations' : 'Save Birth Details'}

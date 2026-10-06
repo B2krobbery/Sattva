@@ -220,3 +220,27 @@ cd web && npx cap sync android && cd android && ANDROID_HOME=~/Android/Sdk ./gra
 - PR #1 merged into `main` (squash `20b4934`); subsequent fixes are pushed to `main`.
 - GitHub releases carry the debug APKs (`v1.1.0`, `v1.1.1`). Debug-signed only — Play Store needs a release-signed AAB with the user's keystore.
 - No secret values belong in this file or commits.
+
+## Device QA fixes (on-device Redmi Note 13 5G, migration 023)
+- **profiles UPDATE grant bug**: migration 005 granted column-level update on a *subset* of
+  columns — `birth_date`, `birth_time`, `birth_place` were missing. Every `updateProfile`
+  call wrote birth fields → **42501 → ALL profile saves failed** (phone, birth, everything).
+  Migration 023 grants the three columns. Symptom reports: "phone won't save", "birth modal
+  keeps appearing" — both same root cause.
+- **updateProfile field-wipe bug**: it always wrote every column with `|| null` fallbacks, so
+  a birth-details save *wiped* `phone` (and vice versa). Now only writes caller-supplied
+  fields (`!== undefined` guard).
+- **NotificationBell off-screen on mobile**: the mobile header uses `backdrop-blur-xl`,
+  which makes it a containing block for `position:fixed` descendants — the notification
+  panel rendered relative to the header, not the viewport, i.e. partially off-screen.
+  Fixed by portaling the panel to `document.body` (createPortal) + `fixed inset-x-4
+  bottom-4` mobile sheet (sm+: anchored dropdown).
+- **Profile tab rail**: horizontal scroll rail now has `-webkit-overflow-scrolling:touch`,
+  `overscroll-behavior-x:contain`, `touch-action:pan-x` for reliable WebView swiping.
+- **janma_ready notification** now fires from both birth-detail save paths
+  (BirthDetailsPrompt + Profile Settings) via sendEngagementEmail → in-app + push + email.
+- **WebView debugging recipe**: `adb forward tcp:9222 localabstract:webview_devtools_remote_<pid>`
+  then CDP `Runtime.evaluate` — works on debug builds; lets you drive/inspect the app's DOM
+  directly. mobile-mcp can't see inside WebViews (accessibility exposes only the WebView
+  container), so CDP is the better tool for in-app UI verification.
+

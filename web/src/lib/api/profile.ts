@@ -68,17 +68,21 @@ export async function updateProfile(profile: Partial<Profile>): Promise<{ succes
   if (!userId) throw new Error('not_authenticated');
   // Profiles are created by the handle_new_user trigger (profiles_insert is
   // intentionally absent); users may only update their own editable columns.
-  const { error } = await supabase.from('profiles').update({
-    display_name: profile.displayName,
-    city: profile.city,
-    gotra: profile.gotra,
-    nakshatra: profile.nakshatra,
-    birth_date: profile.birthDate || null,
-    birth_time: profile.birthTime || null,
-    birth_place: profile.birthPlace || null,
-    phone: profile.phone || null,
-    avatar_path: profile.avatarPath || null,
-  }).eq('id', userId);
+  // Only write fields the caller actually supplied — a partial update must
+  // never null out columns it wasn't asked to touch (a birth-details save
+  // was wiping `phone` because it wasn't in the payload).
+  const updates: Record<string, string | null> = {};
+  if (profile.displayName !== undefined) updates.display_name = profile.displayName;
+  if (profile.city !== undefined) updates.city = profile.city;
+  if (profile.gotra !== undefined) updates.gotra = profile.gotra;
+  if (profile.nakshatra !== undefined) updates.nakshatra = profile.nakshatra;
+  if (profile.birthDate !== undefined) updates.birth_date = profile.birthDate || null;
+  if (profile.birthTime !== undefined) updates.birth_time = profile.birthTime || null;
+  if (profile.birthPlace !== undefined) updates.birth_place = profile.birthPlace || null;
+  if (profile.phone !== undefined) updates.phone = profile.phone || null;
+  if (profile.avatarPath !== undefined) updates.avatar_path = profile.avatarPath || null;
+  if (Object.keys(updates).length === 0) return { success: true };
+  const { error } = await supabase.from('profiles').update(updates).eq('id', userId);
   if (error) throw error;
   return { success: true };
 }
