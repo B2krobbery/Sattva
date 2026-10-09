@@ -351,3 +351,7 @@ has no retry button (N13), Home fabricated stat fallbacks (N14), "Devotee Seeker
 placeholder (N15), janma doesn't derive nakshatra (N16), editor sees Plan/Dispatch
 buttons that fail (N18). Not exercised live: F3 publish→broadcast + G3 heads-up
 (would push to real users), C7 Google sheet, D11 avatar upload, H4 throttling.
+- **Release v1.1.9 (2026-10-10)**: debug APK `pratha-v1.1.9.apk` on GitHub Releases —
+  versionCode 9 / versionName 1.1.9. Includes on-device QA fixes from commit 07aa9aa:
+  event page 404 fix, DonationModal fixes, Home greeting, NotificationBell deep-links,
+  push token RLS, notify-send opt-out, migrations 029/030/031.
