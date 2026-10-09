@@ -95,7 +95,11 @@ function mapEvent(row: any): EventItem {
     slug: row.slug,
     title: row.title || localized(row.title_i18n),
     description: localized(row.description_i18n) || undefined,
-    activities: (row.activities_i18n ?? []).map((a: any) => localized(a)).filter(Boolean),
+    // activities_i18n may be a bare array (older rows) or a locale-wrapped
+    // object like {"en":[...]}; localized() returns the array at runtime.
+    activities: ((Array.isArray(row.activities_i18n) ? row.activities_i18n
+      : localized(row.activities_i18n) ?? []) as any[])
+      .map((a: any) => (typeof a === 'string' ? a : localized(a))).filter(Boolean),
     categoryName: row.categories?.name || undefined,
     templeName: row.temples?.name || undefined,
     templeSlug: row.temples?.slug || undefined,

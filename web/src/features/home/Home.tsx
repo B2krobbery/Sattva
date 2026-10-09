@@ -58,12 +58,18 @@ export function Home() {
   const totalRescued = welfareData?.totalRescued || 450;
   const publishedTemples = welfareData?.publishedTemples ?? 0;
 
+  const hour = new Date().getHours();
+  const greeting =
+    hour < 12 ? { en: 'Good Morning', sa: 'सुप्रभातम्' }
+    : hour < 17 ? { en: 'Good Afternoon', sa: 'शुभमध्याह्नम्' }
+    : { en: 'Good Evening', sa: 'शुभसन्ध्या' };
+
   return (
     <div className="home-page">
       {/* Editorial Dawn Sanctuary Banner */}
       <section className="home-hero-dawn">
         <div className="hero-tag-row">
-          <span className="hero-subhead">सुप्रभातम् • शुभं भवतु</span>
+          <span className="hero-subhead">{greeting.sa} • शुभं भवतु</span>
           <span className="badge-gold">
             <ShieldCheck size={13} />
             Vrindavan Sanctuary
@@ -71,7 +77,7 @@ export function Home() {
         </div>
 
         <h1 className="hero-greeting">
-          Good Morning, {devoteeName}.
+          {greeting.en}, {devoteeName}.
         </h1>
         <p className="hero-desc">
           Step into today with peace. Connect with timeless rituals, nourish indigenous cattle, and invoke blessings for your family.

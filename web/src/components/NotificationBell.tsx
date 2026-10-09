@@ -28,7 +28,8 @@ async function fetchInbox(): Promise<InboxRow[]> {
     id: n.id,
     title: (n.title_i18n as Record<string, string>)?.en || '',
     body: (n.body_i18n as Record<string, string>)?.en || '',
-    cta: (n.data as { cta?: string })?.cta || null,
+    cta: (n.data as { cta?: string; route?: string })?.cta
+      || (n.data as { route?: string })?.route || null,
     readAt: n.read_at,
     createdAt: n.created_at,
   }));

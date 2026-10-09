@@ -240,22 +240,29 @@ Deno.serve(async (req) => {
       const body = String(payload.body || '');
       const image = payload.image ? String(payload.image) : undefined;
       const route = payload.route ? String(payload.route) : undefined;
-      const { data: tokens } = await admin.from('push_tokens').select('token');
+      // Honor the Settings opt-out: notifications_enabled=false devotees get
+      // neither the push nor the inbox row (transactional booking mail still
+      // reaches them via the booking path).
+      const { data: optIns } = await admin.from('profiles')
+        .select('id').neq('notifications_enabled', false);
+      const optedIn = new Set((optIns || []).map((u) => u.id));
+      const { data: tokens } = await admin.from('push_tokens').select('token,user_id');
       let pushOk = 0;
-      await Promise.all((tokens || []).map(async ({ token }) => {
-        if (await fcmSend({ token }, title, body, image, route)) pushOk++;
-      }));
-      const { data: users } = await admin.from('profiles').select('id');
-      if (users?.length) {
+      await Promise.all((tokens || [])
+        .filter((t) => optedIn.has(t.user_id))
+        .map(async ({ token }) => {
+          if (await fcmSend({ token }, title, body, image, route)) pushOk++;
+        }));
+      if (optedIn.size) {
         await admin.from('notifications').insert(
-          users.map((u) => ({
-            user_id: u.id, kind: 'broadcast',
+          [...optedIn].map((id) => ({
+            user_id: id, kind: 'broadcast',
             title_i18n: { en: title }, body_i18n: { en: body },
             data: { route, image },
           }))
         );
       }
-      return json({ ok: true, pushed: pushOk, in_app: users?.length ?? 0 });
+      return json({ ok: true, pushed: pushOk, in_app: optedIn.size });
     }
 
     if (type === 'referral_credited') {

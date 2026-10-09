@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { X, CheckCircle, Heart, Sparkles, Loader2, AlertCircle } from 'lucide-react';
 import { createDonation, getSevaCampaigns } from '@/lib/api/profile';
 import { useAuth } from '@/features/auth/AuthContext';
 import { redirectToLogin } from '@/lib/auth/redirect';
+import './DonationModal.css';
 
 interface DonationModalProps {
   isOpen: boolean;
@@ -26,6 +27,7 @@ export function DonationModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [receiptId, setReceiptId] = useState<string | null>(null);
+  const [confirmedAmount, setConfirmedAmount] = useState<number | null>(null);
 
   const { data: campaigns } = useQuery({
     queryKey: ['seva-campaigns'],
@@ -34,6 +36,15 @@ export function DonationModal({
   });
   const activeCampaign = (campaigns ?? []).find((c) => c.id === campaignId) || campaigns?.[0];
   const initiative = activeCampaign?.title || 'Gaushala Seva';
+
+  // Reopening after a successful donation must show a fresh form, not the
+  // stale receipt — the component stays mounted, so reset on each open.
+  useEffect(() => {
+    if (isOpen) {
+      setReceiptId(null);
+      setError(null);
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -61,6 +72,7 @@ export function DonationModal({
         dedication: dedication.trim() || undefined,
       });
 
+      setConfirmedAmount(finalAmount);
       setReceiptId(res.donationId);
     } catch (err: any) {
       setError(err instanceof Error ? err.message : 'The offering could not be recorded. Please try again.');
@@ -93,7 +105,7 @@ export function DonationModal({
               Seva Recorded with Gratitude
             </h3>
             <p className="text-sm text-text-secondary max-w-md">
-              Devotee {user?.user_metadata?.display_name || 'Seeker'}, your contribution of <strong>₹{customAmount || amount}</strong> for <em>{initiative}</em> has been offered to Shri Krishna Gaushala.
+              Devotee {user?.user_metadata?.display_name || 'Seeker'}, your contribution of <strong>₹{confirmedAmount ?? amount}</strong> for <em>{initiative}</em> has been offered to Shri Krishna Gaushala.
             </p>
             <div className="badge-gold my-2">
               Contribution Ref: {receiptId}

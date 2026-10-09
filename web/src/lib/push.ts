@@ -49,10 +49,13 @@ export async function registerPushToken(user: User | null): Promise<void> {
     await PushNotifications.addListener('registration', async ({ value }) => {
       if (registered) return;
       registered = true;
-      const { error } = await supabase.from('push_tokens').upsert(
-        { user_id: user.id, token: value, platform: 'android' },
-        { onConflict: 'token' }
-      );
+      // SECURITY DEFINER RPC — the plain upsert fails when the device token is
+      // still bound to a previous account on this device (own-row RLS rejects
+      // the conflict UPDATE). The RPC claims the token for the current user.
+      const { error } = await supabase.rpc('register_push_token', {
+        p_token: value,
+        p_platform: 'android',
+      });
       if (error) console.warn('[push] token upsert failed:', error.message);
     });
     await PushNotifications.register();
@@ -86,7 +89,9 @@ export async function registerPushToken(user: User | null): Promise<void> {
       PushNotifications.addListener('pushNotificationActionPerformed', ({ notification }) => {
         const route = (notification.data as { route?: string })?.route;
         if (route && typeof route === 'string' && route.startsWith('/')) {
-          window.location.href = route;
+          // SPA nav — location.href reloads the WebView and can blank the app.
+          window.history.pushState({}, '', route);
+          window.dispatchEvent(new PopStateEvent('popstate'));
         }
       });
     }

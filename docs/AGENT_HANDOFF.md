@@ -312,3 +312,42 @@ cd web && npx cap sync android && cd android && ANDROID_HOME=~/Android/Sdk ./gra
   versionCode 8 / versionName 1.1.8. Includes Learn/Mantras routes, sadhana streaks,
   saved temples, search, real panchang, Rishi links, notif opt-out; native shell
   routes `/` → Home. No emulator pass this cycle.
+
+## Device QA sweep v1.1.8 (on-device Redmi Note 13 5G, 2026-10-09)
+
+Full matrix + issue ledger: `web/android-testing-v118.md`. Swept launch, discovery,
+auth, profile/settings, transactions, admin, notifications, offline/rotation,
+aesthetics, and marketing funnel via mobile-mcp + WebView CDP + Supabase MCP.
+
+Fixed during the sweep (all reverified on the rebuilt APK):
+
+- `discover.ts` `mapEvent` — `.map()` on `activities_i18n` threw when events store it
+  as a localized object `{"en":[...]}` → every non-demo event page 404'd. Now
+  normalizes both shapes and keeps plain-string items.
+- `DonationModal.tsx` — never imported `DonationModal.css` → modal rendered inline
+  at page bottom, unreachable. Also: state (receiptId/amount) persisted across
+  open/close (stale success screen) → reset on `isOpen`; success copy now echoes
+  the captured `confirmedAmount`, not live state.
+- `Home.tsx` — greeting was hardcoded "Good Morning/सुप्रभातम्" (showed at 18:30).
+  Now hour-aware (Morning/Afternoon/Evening + matching Sanskrit).
+- `NotificationBell.tsx` — read `data.cta` but broadcasts use `data.route` →
+  in-app deep-links dead. Mapper now accepts both keys.
+- `push.ts` — token upsert failed whenever the device token was bound to a previous
+  account (conflict→UPDATE hits own-row RLS). Now calls SECURITY DEFINER RPC
+  `register_push_token` (migration 031) which claims the token for the current user.
+  Push-tap deep-link changed from `location.href` (WebView reload hazard) to
+  `history.pushState` + `popstate`.
+- `notify-send` broadcast — ignored `notifications_enabled`; pushed + inbox-inserted
+  for ALL profiles. Now filters opted-out users from both paths.
+- Migration 029 — `notifications_enabled` was missing from the profiles column-level
+  UPDATE grant → Settings toggle PATCH 403'd silently. Granted.
+- Migration 030 — `saved_items` remote table drifted (PK `entity_id uuid`, `create
+  table if not exists` no-op in 025) → every save POST 400'd. Re-shaped to
+  `entity_slug`/`entity_title` contract (table was empty).
+
+Open issues carried forward (see matrix for severity/repro): 9-item bottom nav (N3),
+raw-UUID passport ref (N4), Seva loading-flash + hero contrast (N6/N7), offline error
+has no retry button (N13), Home fabricated stat fallbacks (N14), "Devotee Seeker"
+placeholder (N15), janma doesn't derive nakshatra (N16), editor sees Plan/Dispatch
+buttons that fail (N18). Not exercised live: F3 publish→broadcast + G3 heads-up
+(would push to real users), C7 Google sheet, D11 avatar upload, H4 throttling.
