@@ -22,7 +22,7 @@
 .learn-card-body p { font-size: 0.8125rem; color: var(--color-text-secondary); margin: 0; line-height: 1.55; }
 .learn-card-badges { display: flex; flex-wrap: wrap; gap: 5px; }
 .learn-badge {
-  font-size: 0.625rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
   padding: 3px 9px; border-radius: 999px;
   background: var(--color-surface-subtle); color: var(--color-text-muted);
   border: 1px solid var(--color-border-subtle);
